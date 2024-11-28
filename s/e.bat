@@ -15,6 +15,10 @@ cls
 
 cl %ccflags% /DLEX_DEBUG %PP%\b\lex.cpp -Felex.exe /link %ldflags%
 cl %ccflags% /DSYN_DEBUG %PP%\b\syn_ausdruck.cpp -Fesyn_ausdruck.exe /link %ldflags%
+cl %ccflags% /DSYN_DEBUG %PP%\b\syn_deklaration.cpp -Fesyn_deklaration.exe /link %ldflags%
+cl %ccflags% /DSYN_DEBUG %PP%\b\syn_anweisung.cpp -Fesyn_anweisung.exe /link %ldflags%
+cl %ccflags% /DSYN_DEBUG %PP%\b\syn_direktive.cpp -Fesyn_direktive.exe /link %ldflags%
+cl %ccflags% %PP%\b\sem.cpp -Fesem.exe /link %ldflags%
 
 popd
 

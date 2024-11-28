@@ -1,8 +1,8 @@
-#include "spanne.cpp"
-#include "diagnostik.cpp"
-#include "zeichen.cpp"
-#include "token.cpp"
-#include "lexer.cpp"
+#include "kmp/spanne.cpp"
+#include "kmp/diagnostik.cpp"
+#include "kmp/zeichen.cpp"
+#include "kmp/glied.cpp"
+#include "kmp/lexer.cpp"
 
 #include <fstream>
 #include <sstream>
@@ -17,7 +17,7 @@ int main (int argc, char *argv[]) {
     std::stringstream inhalt;
     inhalt << datei.rdbuf();
 
-    auto lexer = Sss::Lexer(dateiname, inhalt.str());
+    auto lexer = Sss::Kmp::Lexer(dateiname, inhalt.str());
     auto token = lexer.starten();
 
     for (auto *t : token)
