@@ -13,15 +13,16 @@
 
 namespace Sss::Kmp {
 
-Datentyp * global_datentyp_g8     = new Datentyp(Datentyp::GANZE_ZAHL, 1);
-Datentyp * global_datentyp_g16    = new Datentyp(Datentyp::GANZE_ZAHL, 2);
-Datentyp * global_datentyp_g32    = new Datentyp(Datentyp::GANZE_ZAHL, 4);
-Datentyp * global_datentyp_g64    = new Datentyp(Datentyp::GANZE_ZAHL, 8);
-Datentyp * global_datentyp_g128   = new Datentyp(Datentyp::GANZE_ZAHL, 16);
-Datentyp * global_datentyp_d32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4);
-Datentyp * global_datentyp_d64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8);
-Datentyp * global_datentyp_text   = new Datentyp(Datentyp::TEXT, 8);
-Datentyp * global_datentyp_nichts = new Datentyp(Datentyp::NICHTS, 0);
+Datentyp * global_datentyp_g8     = new Datentyp(Datentyp::GANZE_ZAHL, 1, true);
+Datentyp * global_datentyp_g16    = new Datentyp(Datentyp::GANZE_ZAHL, 2, true);
+Datentyp * global_datentyp_g32    = new Datentyp(Datentyp::GANZE_ZAHL, 4, true);
+Datentyp * global_datentyp_g64    = new Datentyp(Datentyp::GANZE_ZAHL, 8, true);
+Datentyp * global_datentyp_g128   = new Datentyp(Datentyp::GANZE_ZAHL, 16, true);
+Datentyp * global_datentyp_d32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4, true);
+Datentyp * global_datentyp_d64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8, true);
+Datentyp * global_datentyp_text   = new Datentyp(Datentyp::TEXT, 8, true);
+Datentyp * global_datentyp_bool   = new Datentyp(Datentyp::GANZE_ZAHL, 4, true);
+Datentyp * global_datentyp_nichts = new Datentyp(Datentyp::NICHTS, 0, true);
 
 Semantik::Semantik(Ast ast, Zone *system, Zone *global)
     : _ast(ast)
@@ -32,9 +33,9 @@ Semantik::Semantik(Ast ast, Zone *system, Zone *global)
 }
 
 void
-Semantik::melden(Spanne spanne, std::string text)
+Semantik::panik(Spanne spanne, std::string text)
 {
-    _diagnostik.melden(spanne, new Fehler(text));
+    melden(spanne, text);
 
     for (auto meldung : _diagnostik.meldungen())
     {
@@ -45,9 +46,51 @@ Semantik::melden(Spanne spanne, std::string text)
 }
 
 void
+Semantik::panik(Symbol *symbol, std::string text)
+{
+    panik(symbol->spanne(), text);
+}
+
+void
+Semantik::panik(Ausdruck *ausdruck, std::string text)
+{
+    panik(ausdruck->spanne(), text);
+}
+
+void
+Semantik::panik(Spezifizierung *spezifizierung, std::string text)
+{
+    panik(spezifizierung->spanne(), text);
+}
+
+void
+Semantik::panik(Deklaration *deklaration, std::string text)
+{
+    panik(deklaration->spanne(), text);
+}
+
+void
+Semantik::panik(Anweisung *anweisung, std::string text)
+{
+    panik(anweisung->spanne(), text);
+}
+
+void
+Semantik::melden(Spanne spanne, std::string text)
+{
+    _diagnostik.melden(spanne, new Fehler(text));
+}
+
+void
 Semantik::melden(Ausdruck *ausdruck, std::string text)
 {
     melden(ausdruck->spanne(), text);
+}
+
+void
+Semantik::melden(Spezifizierung *spezifizierung, std::string text)
+{
+    melden(spezifizierung->spanne(), text);
 }
 
 Zone *
@@ -74,7 +117,6 @@ Semantik::starten()
     importe_registrieren();
     deklarationen_registrieren();
     symbole_analysieren();
-    analyse_abschließen();
 
     return _ast;
 }
@@ -87,28 +129,7 @@ Semantik::importe_registrieren()
         if (anweisung->art() == Ast_Knoten::ANWEISUNG_BRAUCHE)
         {
             auto *import = anweisung->als<Anweisung_Brauche *>();
-            auto dateiname = import->dateiname();
-
-            std::ifstream datei(dateiname);
-            std::stringstream inhalt;
-            inhalt << datei.rdbuf();
-
-            auto lexer = Lexer(dateiname, inhalt.str());
-            auto token = lexer.starten();
-
-            auto syntax = Syntax(token);
-            auto ast = syntax.starten();
-
-            auto semantik = Semantik(ast, _system, new Zone("import", _system));
-            ast = semantik.starten();
-
-            for (auto [name, symbol] : semantik.global()->symbole())
-            {
-                if (!registrieren(symbol))
-                {
-                    assert(!"meldung erstatten");
-                }
-            }
+            import_verarbeiten(import->dateiname());
         }
 
         else if (anweisung->art() == Ast_Knoten::ANWEISUNG_DEKLARATION)
@@ -138,11 +159,12 @@ Semantik::importe_registrieren()
             ast = semantik.starten();
 
             deklaration->symbol_setzen(
-                new Symbol(Symbol::MODUL, Symbol::BEHANDELT, import->name(), semantik.global()));
+                new Symbol(deklaration->spanne(),
+                           Symbol::MODUL, Symbol::BEHANDELT, import->name(), semantik.global()));
 
             if (!registrieren(deklaration->symbol()))
             {
-                assert(!"meldung erstatten");
+                panik(deklaration, std::format("bezeichner {} bereits vorhanden.", import->name()));
             }
         }
     }
@@ -164,9 +186,14 @@ Semantik::deklarationen_registrieren()
         {
             switch (deklaration->art())
             {
+                case Ast_Knoten::DEKLARATION_BRAUCHE:
+                {
+                    // INFO: deklaration brauche wird bereits in der methode importe_registrieren behandelt.
+                } break;
+
                 case Ast_Knoten::DEKLARATION_VARIABLE:
                 {
-                    auto *symbol = new Symbol(Symbol::VARIABLE, Symbol::UNBEHANDELT, name);
+                    auto *symbol = new Symbol(deklaration->spanne(), Symbol::VARIABLE, Symbol::UNBEHANDELT, name);
                     deklaration->symbol_setzen(symbol);
 
                     if (!registrieren(symbol))
@@ -178,9 +205,15 @@ Semantik::deklarationen_registrieren()
                 case Ast_Knoten::DEKLARATION_FUNKTION:
                 {
                     auto *funktion = deklaration->als<Deklaration_Funktion *>();
-                    auto *symbol = new Symbol(Symbol::FUNKTION, Symbol::UNBEHANDELT,
-                                              name, new Datentyp_Funktion());
+                    auto *datentyp = new Datentyp_Funktion();
+                    auto *symbol = new Symbol(
+                        deklaration->spanne(),
+                        Symbol::FUNKTION, Symbol::UNBEHANDELT,
+                        name,
+                        datentyp);
 
+                    datentyp->symbol_setzen(symbol);
+                    datentyp->deklaration_setzen(deklaration);
                     deklaration->symbol_setzen(symbol);
 
                     if (!registrieren(symbol))
@@ -191,10 +224,16 @@ Semantik::deklarationen_registrieren()
 
                 case Ast_Knoten::DEKLARATION_SCHABLONE:
                 {
-                    auto *symbol = new Symbol(
-                        Symbol::DATENTYP, Symbol::BEHANDELT,
-                        name, new Datentyp_Schablone(deklaration->als<Deklaration_Schablone *>()));
+                    auto *datentyp = new Datentyp_Schablone(deklaration->als<Deklaration_Schablone *>());
 
+                    auto *symbol = new Symbol(
+                        deklaration->spanne(),
+                        Symbol::DATENTYP, Symbol::BEHANDELT,
+                        name,
+                        datentyp);
+
+                    datentyp->symbol_setzen(symbol);
+                    datentyp->deklaration_setzen(deklaration);
                     deklaration->symbol_setzen(symbol);
 
                     _schablonen.push_back(deklaration->als<Deklaration_Schablone *>());
@@ -207,10 +246,14 @@ Semantik::deklarationen_registrieren()
 
                 case Ast_Knoten::DEKLARATION_OPT:
                 {
+                    auto *datentyp = new Datentyp_Opt();
                     auto *symbol = new Symbol(
+                        deklaration->spanne(),
                         Symbol::DATENTYP, Symbol::UNBEHANDELT,
-                        name, new Datentyp_Opt());
+                        name, datentyp);
 
+                    datentyp->symbol_setzen(symbol);
+                    datentyp->deklaration_setzen(deklaration);
                     deklaration->symbol_setzen(symbol);
 
                     if (!registrieren(symbol))
@@ -245,55 +288,6 @@ Semantik::symbole_analysieren()
 }
 
 void
-Semantik::analyse_abschließen()
-{
-    for (auto *schablone : _schablonen)
-    {
-        schablone_abschließen(schablone);
-    }
-}
-
-void
-Semantik::schablone_abschließen(Deklaration_Schablone *schablone)
-{
-    Symbol *symbol = schablone->symbol();
-    auto *datentyp = symbol->datentyp()->als<Datentyp_Schablone *>();
-
-    if (datentyp->abgeschlossen())
-    {
-        return;
-    }
-
-    assert(symbol != nullptr);
-    assert(datentyp != nullptr);
-
-    size_t größe = 0;
-    size_t versatz = 0;
-
-    auto *z = symbol->zone();
-    z->über_setzen(aktive_zone());
-
-    zone_betreten(symbol->zone());
-
-    for (auto *eigenschaft : schablone->eigenschaften())
-    {
-        auto *dt = deklaration_analysieren(eigenschaft);
-
-        for (auto name : eigenschaft->namen())
-        {
-            größe += dt->größe();
-            datentyp->eigenschaft_hinzufügen(dt, versatz, name);
-            versatz += dt->größe();
-        }
-    }
-
-    zone_verlassen();
-
-    datentyp->größe_setzen(größe);
-    datentyp->abschließen();
-}
-
-void
 Semantik::symbol_analysieren(Symbol *symbol, Deklaration *deklaration)
 {
     if (symbol->status() == Symbol::BEHANDELT)
@@ -303,7 +297,7 @@ Semantik::symbol_analysieren(Symbol *symbol, Deklaration *deklaration)
 
     if (symbol->status() == Symbol::IN_BEHANDLUNG)
     {
-        assert(!"zirkularität");
+        panik(symbol, "Zirkuläre Abhängigkeit");
     }
 
     symbol->status_setzen(Symbol::IN_BEHANDLUNG);
@@ -323,6 +317,16 @@ Semantik::symbol_analysieren(Symbol *symbol, Deklaration *deklaration)
         case Ast_Knoten::DEKLARATION_OPT:
         {
             opt_analysieren(symbol, deklaration->als<Deklaration_Opt *>());
+        } break;
+
+        case Ast_Knoten::DEKLARATION_SCHABLONE:
+        {
+            schablone_analysieren(symbol, deklaration->als<Deklaration_Schablone *>());
+        } break;
+
+        default:
+        {
+            assert(!"unbekannte deklaration");
         } break;
     }
 
@@ -373,7 +377,9 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
         }
 
         if (!symbol->zone()->registrieren(
-                new Symbol(Symbol::VARIABLE, Symbol::BEHANDELT, parameter->namen()[0], datentyp)))
+                new Symbol(
+                    parameter->spanne(),
+                    Symbol::VARIABLE, Symbol::BEHANDELT, parameter->namen()[0], datentyp)))
         {
             assert(!"meldung erstatten");
         }
@@ -396,7 +402,7 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
         z->über_setzen(aktive_zone());
 
         zone_betreten(symbol->zone());
-        anweisung_analysieren(deklaration->rumpf());
+        anweisung_analysieren(deklaration->rumpf(), funktion->rückgabe());
         zone_verlassen();
     }
 }
@@ -404,7 +410,149 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
 void
 Semantik::opt_analysieren(Symbol *symbol, Deklaration_Opt *deklaration)
 {
-    // AUFGABE: eigenschaften durchgehen
+    auto *datentyp = symbol->datentyp()->als<Datentyp_Opt *>();
+
+    auto *z = symbol->zone();
+    z->über_setzen(aktive_zone());
+
+    zone_betreten(symbol->zone());
+
+    for (auto *eigenschaft : deklaration->eigenschaften())
+    {
+        Datentyp *dt = nullptr;
+        if (eigenschaft->spezifizierung())
+        {
+            dt = spezifizierung_analysieren(eigenschaft->spezifizierung());
+        }
+
+        Operand *op = nullptr;
+        if (eigenschaft->initialisierung())
+        {
+            op = ausdruck_analysieren(eigenschaft->initialisierung(), dt);
+        }
+
+        for (auto name : eigenschaft->namen())
+        {
+            datentyp->eigenschaft_hinzufügen(dt, op, name);
+        }
+    }
+
+    zone_verlassen();
+
+    datentyp->abschließen();
+}
+
+void
+Semantik::schablone_analysieren(Symbol *symbol, Deklaration_Schablone *schablone, bool zirkularität_ignorieren)
+{
+    auto *datentyp = symbol->datentyp()->als<Datentyp_Schablone *>();
+
+    if (datentyp->status() == Datentyp::BEARBEITET ||
+        datentyp->status() == Datentyp::IN_BEARBEITUNG && zirkularität_ignorieren)
+    {
+        return;
+    }
+
+    if (datentyp->status() == Datentyp::IN_BEARBEITUNG)
+    {
+        panik(symbol, std::format("datentyp {} mit zirkulärer abhängigkeit.", symbol->name()));
+    }
+
+    datentyp->status_setzen(Datentyp::IN_BEARBEITUNG);
+
+    assert(symbol != nullptr);
+    assert(datentyp != nullptr);
+
+    size_t größe = 0;
+    size_t versatz = 0;
+
+    auto *z = symbol->zone();
+    z->über_setzen(aktive_zone());
+
+    zone_betreten(z);
+
+    for (auto *eigenschaft : schablone->eigenschaften())
+    {
+        auto *dt = deklaration_analysieren(eigenschaft);
+
+        for (auto name : eigenschaft->namen())
+        {
+            größe += dt->größe();
+            if (!datentyp->eigenschaft_hinzufügen(dt, versatz, name))
+            {
+                panik(eigenschaft, std::format("{} bereits vorhanden.", name));
+            }
+            versatz += dt->größe();
+        }
+    }
+
+    zone_verlassen();
+
+    datentyp->größe_setzen(größe);
+    datentyp->status_setzen(Datentyp::BEARBEITET);
+}
+
+void
+Semantik::muster_analysieren(Ausdruck *muster, Datentyp *datentyp)
+{
+    switch (muster->art())
+    {
+        case Ast_Knoten::AUSDRUCK_BEZEICHNER:
+        {
+            auto name = muster->als<Ausdruck_Bezeichner *>()->wert();
+            if (!registrieren(new Symbol(muster->spanne(), Symbol::VARIABLE, Symbol::BEHANDELT, name, datentyp)))
+            {
+                panik(muster, std::format("bezeichner {} konnte nicht registriert werden.", name));
+            }
+        } break;
+
+        case Ast_Knoten::AUSDRUCK_KOMPOSITUM:
+        {
+            if (datentyp->art() != Datentyp::SCHABLONE)
+            {
+                panik(muster, std::format("kompositum ausdruck kann nur bei einer schablone angewendet werden"));
+            }
+
+            auto *schablone = datentyp->als<Datentyp_Schablone *>();
+            auto *kompositum = muster->als<Ausdruck_Kompositum *>();
+
+            for (auto *kompositum_eigenschaft : kompositum->eigenschaften())
+            {
+                bool eigenschaft_gefunden = false;
+
+                for (auto *schablone_eigenschaft : schablone->eigenschaften())
+                {
+                    if (kompositum_eigenschaft->name() == schablone_eigenschaft->name())
+                    {
+                        if (!registrieren(
+                            new Symbol(
+                                kompositum_eigenschaft->spanne(),
+                                Symbol::VARIABLE,
+                                Symbol::BEHANDELT,
+                                kompositum_eigenschaft->name(),
+                                schablone_eigenschaft->datentyp())))
+                        {
+                            panik(kompositum_eigenschaft->spanne(),
+                                  std::format("bezeichner {} konnte nicht registriert werden.", kompositum_eigenschaft->name()));
+                        }
+
+                        eigenschaft_gefunden = true;
+                        break;
+                    }
+                }
+
+                if (!eigenschaft_gefunden)
+                {
+                    panik(kompositum_eigenschaft->spanne(),
+                          std::format("eigenschaft {} in der schablone {} nicht vorhanden",
+                              kompositum_eigenschaft->name(),
+                              schablone->symbol()->name()));
+                }
+            }
+        } break;
+
+        default: assert(!"unbekannter ausdruck");
+    }
 }
 
 Datentyp *
@@ -421,6 +569,7 @@ Semantik::deklaration_analysieren(Deklaration *deklaration)
             if (spezifizierung)
             {
                 dt_spezifizierung = spezifizierung_analysieren(spezifizierung);
+                datentyp_abschließen(dt_spezifizierung);
             }
 
             Datentyp *dt_initialisierung = dt_spezifizierung;
@@ -428,6 +577,7 @@ Semantik::deklaration_analysieren(Deklaration *deklaration)
             {
                 auto *op = ausdruck_analysieren(initialisierung, dt_spezifizierung);
                 dt_initialisierung = op->datentyp();
+                datentyp_abschließen(dt_initialisierung);
             }
 
             if (dt_spezifizierung == nullptr && dt_initialisierung != nullptr)
@@ -435,16 +585,16 @@ Semantik::deklaration_analysieren(Deklaration *deklaration)
                 dt_spezifizierung = dt_initialisierung;
             }
 
-            if (!datentypen_kompatibel(dt_spezifizierung, dt_initialisierung))
+            if (Datentyp::datentypen_kompatibel(dt_spezifizierung, dt_initialisierung) == Datentyp::INKOMPATIBEL)
             {
-                assert(!"meldung erstatten");
+                panik(deklaration, "datentyp der spezifizierung und der initialisierung sind nicht kompatibel.");
             }
 
             auto *erg = dt_spezifizierung ? dt_spezifizierung : dt_initialisierung;
 
             for (auto name : deklaration->namen())
             {
-                auto *sym = new Symbol(Symbol::VARIABLE, Symbol::BEHANDELT, name, erg);
+                auto *sym = new Symbol(deklaration->spanne(), Symbol::VARIABLE, Symbol::BEHANDELT, name, erg);
                 if (!registrieren(sym))
                 {
                     assert(!"meldung erstatten");
@@ -472,11 +622,12 @@ Semantik::spezifizierung_analysieren(Spezifizierung *spezifizierung)
     {
         case Ast_Knoten::SPEZIFIZIERUNG_BEZEICHNER:
         {
-            auto *symbol = bezeichner_analysieren(spezifizierung->als<Spezifizierung_Bezeichner *>()->name());
+            auto name = spezifizierung->als<Spezifizierung_Bezeichner *>()->name();
+            auto *symbol = bezeichner_analysieren(name);
 
             if (symbol == nullptr)
             {
-                assert(!"meldung erstatten");
+                panik(spezifizierung, std::format("{} ist kein bekannter Datentyp.", name));
             }
 
             return symbol->datentyp();
@@ -501,6 +652,31 @@ Semantik::spezifizierung_analysieren(Spezifizierung *spezifizierung)
             return new Datentyp_Zeiger(basis_datentyp);
         } break;
 
+        case Ast_Knoten::SPEZIFIZIERUNG_FUNKTION:
+        {
+            std::vector<Datentyp *> parameter;
+            Datentyp *rückgabe = nullptr;
+
+            for (auto *param : spezifizierung->als<Spezifizierung_Funktion *>()->parameter())
+            {
+                auto *param_datentyp = spezifizierung_analysieren(param);
+
+                if (param_datentyp == nullptr)
+                {
+                    assert(!"meldung erstatten");
+                }
+
+                parameter.push_back(param_datentyp);
+            }
+
+            if (spezifizierung->als<Spezifizierung_Funktion *>()->rückgabe())
+            {
+                rückgabe = spezifizierung_analysieren(spezifizierung->als<Spezifizierung_Funktion *>()->rückgabe());
+            }
+
+            return new Datentyp_Funktion(parameter, rückgabe);
+        } break;
+
         default: assert(!"unbekannte spezifizierung");
     }
 
@@ -516,22 +692,33 @@ Semantik::bezeichner_analysieren(std::string bezeichner)
 }
 
 void
-Semantik::datentyp_abschließen(Datentyp *datentyp)
+Semantik::datentyp_abschließen(Datentyp *datentyp, bool basis_eines_zeigers)
 {
+    if (datentyp->abgeschlossen())
+    {
+        return;
+    }
+
     switch (datentyp->art())
     {
         case Datentyp::SCHABLONE:
         {
-            schablone_abschließen(datentyp->als<Datentyp_Schablone *>()->deklaration());
+            schablone_analysieren(datentyp->symbol(), datentyp->deklaration()->als<Deklaration_Schablone *>(), basis_eines_zeigers);
         } break;
 
-        case Datentyp::FUNKTION:
+        case Datentyp::FELD:
         {
-            // AUFGABE: abschließen
-            assert(!"abschließen");
+            /*assert(!"Feld Datentyp abschließen");*/
         } break;
 
-        default: break;
+        case Datentyp::ZEIGER:
+        {
+            auto *zeiger = datentyp->als<Datentyp_Zeiger *>();
+
+            datentyp_abschließen(zeiger->basis(), true);
+        } break;
+
+        /*default: assert(!"implementieren"); break;*/
     }
 }
 
@@ -542,17 +729,19 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
     {
         case Ast_Knoten::AUSDRUCK_DEZIMALZAHL:
         {
-            return new Operand(global_datentyp_d32, Operand::LITERAL);
+            return new Operand(global_datentyp_d32, Operand::LITERAL | Operand::ARITHMETISCH);
         } break;
 
         case Ast_Knoten::AUSDRUCK_GANZZAHL:
         {
-            return new Operand(global_datentyp_g32, Operand::LITERAL);
+            return new Operand(global_datentyp_g32, Operand::LITERAL | Operand::ARITHMETISCH);
         } break;
 
         case Ast_Knoten::AUSDRUCK_TEXT:
         {
-            return new Operand(global_datentyp_text, Operand::LITERAL);
+            auto *erg = new Operand(global_datentyp_text, Operand::LITERAL);
+
+            return erg;
         } break;
 
         case Ast_Knoten::AUSDRUCK_BEZEICHNER:
@@ -564,14 +753,62 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
                 assert(!"meldung erstatten");
             }
 
-            return new Operand(symbol);
+            auto *erg = new Operand(symbol);
+
+            return erg;
         } break;
 
         case Ast_Knoten::AUSDRUCK_UNÄR:
         {
-            auto *op = ausdruck_analysieren(ausdruck->als<Ausdruck_Unär *>()->ausdruck());
+            auto *erg = ausdruck_analysieren(ausdruck->als<Ausdruck_Unär *>()->ausdruck());
 
-            return op;
+            return erg;
+        } break;
+
+        case Ast_Knoten::AUSDRUCK_BINÄR:
+        {
+            auto *bin = ausdruck->als<Ausdruck_Binär *>();
+
+            auto *links  = ausdruck_analysieren(bin->links());
+            auto *rechts = ausdruck_analysieren(bin->rechts());
+
+            if (bin->op() >= Ausdruck_Binär::ADDITION && bin->op() <= Ausdruck_Binär::MODULO ||
+                bin->op() >= Ausdruck_Binär::BIT_SCHIEB_L && bin->op() <= Ausdruck_Binär::BIT_SCHIEB_R)
+            {
+                if (!links->ist_arithmetisch())
+                {
+                    panik(bin->links(), "arithmetischen operanden erwartet");
+                }
+
+                if (!rechts->ist_arithmetisch())
+                {
+                    panik(bin->links(), "arithmetischen operanden erwartet");
+                }
+
+                if (Datentyp::datentypen_kompatibel(links->datentyp(), rechts->datentyp()) == Datentyp::INKOMPATIBEL)
+                {
+                    panik(ausdruck, "datentypen inkompatibel");
+                }
+
+                auto *erg = new Operand(links->datentyp());
+
+                return erg;
+            }
+            else if (bin->op() >= Ausdruck_Binär::GLEICH && bin->op() <= Ausdruck_Binär::GRÖẞER_GLEICH)
+            {
+                if (Datentyp::datentypen_kompatibel(links->datentyp(), rechts->datentyp()) == Datentyp::INKOMPATIBEL)
+                {
+                    panik(ausdruck, "datentypen inkompatibel");
+                }
+
+                auto *erg = new Operand(global_datentyp_bool);
+
+                return erg;
+            }
+            else
+            {
+                assert(!"kein passender operand");
+            }
         } break;
 
         case Ast_Knoten::AUSDRUCK_AUFRUF:
@@ -601,7 +838,7 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
 
                 auto *arg_op = ausdruck_analysieren(argument);
 
-                if (!datentypen_kompatibel(parameter, arg_op->datentyp()))
+                if (Datentyp::datentypen_kompatibel(parameter, arg_op->datentyp()) == Datentyp::INKOMPATIBEL)
                 {
                     assert(!"meldung erstatten");
                 }
@@ -613,8 +850,8 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
         case Ast_Knoten::AUSDRUCK_EIGENSCHAFT:
         {
             auto *eigenschaft = ausdruck->als<Ausdruck_Eigenschaft *>();
-
             auto *basis = ausdruck_analysieren(eigenschaft->basis());
+
             if (basis == nullptr)
             {
                 assert(!"meldung erstatten");
@@ -636,20 +873,61 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
                     assert(!"meldung erstatten");
                 }
 
-                assert(!"implementieren");
+                datentyp_abschließen(basis->datentyp());
+
+                assert(eigenschaft->eigenschaft()->art() == Ast_Knoten::AUSDRUCK_BEZEICHNER);
+                auto name = eigenschaft->eigenschaft()->als<Ausdruck_Bezeichner *>()->wert();
+                auto *symbol = basis->datentyp()->symbol()->zone()->suchen(name);
+
+                if (symbol == nullptr)
+                {
+                    panik(eigenschaft->eigenschaft(),
+                          std::format("eigenschaft {} ist nicht teil der datenstruktur {}",
+                                      name, basis->datentyp()->symbol()->name()));
+                }
+
+                return new Operand(symbol);
             }
         } break;
 
         case Ast_Knoten::AUSDRUCK_KOMPOSITUM:
         {
             auto *kompositum = ausdruck->als<Ausdruck_Kompositum *>();
+            Datentyp *datentyp = nullptr;
 
             if (kompositum->spezifizierung() == nullptr && erwarteter_datentyp == nullptr)
             {
-                assert(!"meldung erstatten");
+                datentyp = new Datentyp_Schablone(nullptr);
+                datentyp->symbol_setzen(new Symbol(kompositum->spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "<anonymer datentyp>"));
+                datentyp->symbol()->datentyp_setzen(datentyp);
+
+                auto *z = datentyp->symbol()->zone();
+                z->über_setzen(aktive_zone());
+
+                size_t versatz = 0;
+                size_t größe = 0;
+
+                zone_betreten(z);
+                    for (auto *eigenschaft : kompositum->eigenschaften())
+                    {
+                        auto *op = ausdruck_analysieren(eigenschaft->ausdruck());
+                        datentyp->als<Datentyp_Schablone *>()->eigenschaft_hinzufügen(
+                            op->datentyp(), versatz, eigenschaft->name());
+
+                        if (!registrieren(new Symbol(eigenschaft->spanne(), Symbol::VARIABLE, Symbol::BEHANDELT, eigenschaft->name())))
+                        {
+                            panik(eigenschaft->spanne(), std::format("{} kann hier nicht verwendet werden", eigenschaft->name()));
+                        }
+
+                        versatz += op->datentyp()->größe();
+                        größe += op->datentyp()->größe();
+                    }
+                zone_verlassen();
+
+                datentyp->größe_setzen(größe);
+                datentyp->abschließen();
             }
 
-            Datentyp *datentyp = nullptr;
             if (erwarteter_datentyp)
             {
                 if (kompositum->spezifizierung())
@@ -663,9 +941,9 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
 
                     datentyp_abschließen(deklarierter_datentyp);
 
-                    if (!datentypen_kompatibel(deklarierter_datentyp, erwarteter_datentyp))
+                    if (Datentyp::datentypen_kompatibel(deklarierter_datentyp, erwarteter_datentyp) == Datentyp::INKOMPATIBEL)
                     {
-                        assert(!"meldung erstatten");
+                        panik(kompositum->spezifizierung(), "Datentypen inkompatibel");
                     }
                 }
 
@@ -673,15 +951,46 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
             }
             else
             {
-                auto *deklarierter_datentyp = spezifizierung_analysieren(kompositum->spezifizierung());
-                datentyp_abschließen(deklarierter_datentyp);
+                Datentyp *deklarierter_datentyp = nullptr;
+
+                if (kompositum->spezifizierung())
+                {
+                    deklarierter_datentyp = spezifizierung_analysieren(kompositum->spezifizierung());
+                    datentyp_abschließen(deklarierter_datentyp);
+                }
 
                 if (deklarierter_datentyp == nullptr)
                 {
-                    assert(!"meldung erstatten");
-                }
+#if 0
+                    // INFO: anonymen datentyp erstellen
+                    std::vector<Datentyp_Anon::Eigenschaft *> eigenschaften;
+                    size_t versatz = 0;
 
-                datentyp = deklarierter_datentyp;
+                    for (auto eigenschaft : kompositum->eigenschaften())
+                    {
+                        if (!eigenschaft->ist_benamt())
+                        {
+                            assert(!"anonymer datentyp darf nur benamte eigenschaften enthalten.");
+                        }
+
+                        auto *eigenschaft_op = ausdruck_analysieren(eigenschaft->ausdruck());
+
+                        if (eigenschaft_op->datentyp() == nullptr)
+                        {
+                            assert(!"datentyp konnte nicht hergeleitet werden.");
+                        }
+
+                        eigenschaften.push_back(new Datentyp_Anon::Eigenschaft(eigenschaft_op->datentyp(), versatz, eigenschaft->name()));
+                        versatz += eigenschaft_op->datentyp()->größe();
+                    }
+
+                    datentyp = new Datentyp_Anon(eigenschaften);
+#endif
+                }
+                else
+                {
+                    datentyp = deklarierter_datentyp;
+                }
             }
 
             if (kompositum->ist_benamt() && datentyp->art() != Datentyp::SCHABLONE)
@@ -723,8 +1032,7 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
                 }
             }
 
-            assert(!"implementieren");
-            return nullptr;
+            return new Operand(datentyp);
         } break;
 
         default:
@@ -738,26 +1046,69 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
 }
 
 void
-Semantik::anweisung_analysieren(Anweisung *anweisung)
+Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
 {
     switch (anweisung->art())
     {
-        case Ast_Knoten::ANWEISUNG_BLOCK:
-        {
-            for (auto *a : anweisung->als<Anweisung_Block *>()->anweisungen())
-            {
-                anweisung_analysieren(a);
-            }
-        } break;
-
         case Ast_Knoten::ANWEISUNG_AUSDRUCK:
         {
             ausdruck_analysieren(anweisung->als<Anweisung_Ausdruck *>()->ausdruck());
         } break;
 
+        case Ast_Knoten::ANWEISUNG_BLOCK:
+        {
+            for (auto *a : anweisung->als<Anweisung_Block *>()->anweisungen())
+            {
+                anweisung_analysieren(a, über);
+            }
+        } break;
+
         case Ast_Knoten::ANWEISUNG_DEKLARATION:
         {
             deklaration_analysieren(anweisung->als<Anweisung_Deklaration *>()->deklaration());
+        } break;
+
+        case Ast_Knoten::ANWEISUNG_FÜR:
+        {
+            auto *für = anweisung->als<Anweisung_Für *>();
+
+            zone_betreten(new Zone("für", aktive_zone()));
+                if (für->index() != nullptr)
+                {
+                    assert(für->index()->art() == Ast_Knoten::AUSDRUCK_BEZEICHNER);
+                    registrieren(new Symbol(
+                        für->index()->spanne(),
+                        Symbol::VARIABLE, Symbol::BEHANDELT, für->index()->als<Ausdruck_Bezeichner *>()->wert()
+                    ));
+                }
+                else
+                {
+                    registrieren(new Symbol(
+                        Spanne(),
+                        Symbol::VARIABLE, Symbol::BEHANDELT, "it"
+                    ));
+                }
+
+                ausdruck_analysieren(für->bedingung());
+                anweisung_analysieren(für->rumpf());
+            zone_verlassen();
+        } break;
+
+        case Ast_Knoten::ANWEISUNG_RES:
+        {
+            auto *res = anweisung->als<Anweisung_Res *>();
+
+            auto *op = ausdruck_analysieren(res->ausdruck());
+
+            if (über == nullptr)
+            {
+                panik(anweisung, std::format("nur eine funktion kann ein ergebnis zurückgeben."));
+            }
+
+            if (Datentyp::datentypen_kompatibel(über, op->datentyp()) == Datentyp::INKOMPATIBEL)
+            {
+                panik(anweisung, std::format("der datentyp der rückgabe {}, ist nicht mit dem deklarierten rückgabedatentyp {} kompatibel.", op->datentyp()->symbol()->name(), über->symbol()->name()));
+            }
         } break;
 
         case Ast_Knoten::ANWEISUNG_WENN:
@@ -782,29 +1133,68 @@ Semantik::anweisung_analysieren(Anweisung *anweisung)
             }
         } break;
 
-        case Ast_Knoten::ANWEISUNG_FÜR:
+        case Ast_Knoten::ANWEISUNG_WEICHE:
         {
-            auto *für = anweisung->als<Anweisung_Für *>();
+            auto *weiche = anweisung->als<Anweisung_Weiche *>();
 
-            zone_betreten();
-                if (für->index() != nullptr)
-                {
-                    assert(für->index()->art() == Ast_Knoten::AUSDRUCK_BEZEICHNER);
-                    registrieren(new Symbol(
-                        Symbol::VARIABLE, Symbol::BEHANDELT, für->index()->als<Ausdruck_Bezeichner *>()->wert()
-                    ));
-                }
-                else
-                {
-                    registrieren(new Symbol(
-                        Symbol::VARIABLE, Symbol::BEHANDELT, "it"
-                    ));
-                }
+            auto ausdruck_op = ausdruck_analysieren(weiche->ausdruck());
 
-                ausdruck_analysieren(für->bedingung());
-                anweisung_analysieren(für->rumpf());
-            zone_verlassen();
+            for (auto *muster: weiche->muster())
+            {
+                zone_betreten(new Zone("muster", aktive_zone()));
+
+                muster_analysieren(muster->muster(), ausdruck_op->datentyp());
+                anweisung_analysieren(muster->anweisung());
+
+                zone_verlassen();
+            }
         } break;
+
+        case Ast_Knoten::ANWEISUNG_ZUWEISUNG:
+        {
+            auto *zuweisung = anweisung->als<Anweisung_Zuweisung *>();
+
+            auto links  = ausdruck_analysieren(zuweisung->links());
+            datentyp_abschließen(links->datentyp());
+
+            auto rechts = ausdruck_analysieren(zuweisung->rechts());
+            datentyp_abschließen(rechts->datentyp());
+
+            if (Datentyp::datentypen_kompatibel(links->datentyp(), rechts->datentyp()) == Datentyp::INKOMPATIBEL)
+            {
+                panik(zuweisung, std::format("datentypen sind nicht kompatibel."));
+            }
+        } break;
+
+        default:
+        {
+            assert(!"unbekannte anweisung");
+        } break;
+    }
+}
+
+void
+Semantik::import_verarbeiten(std::string dateiname)
+{
+    std::ifstream datei(dateiname);
+    std::stringstream inhalt;
+    inhalt << datei.rdbuf();
+
+    auto lexer = Lexer(dateiname, inhalt.str());
+    auto token = lexer.starten();
+
+    auto syntax = Syntax(token);
+    auto ast = syntax.starten();
+
+    auto semantik = Semantik(ast, _system, new Zone("import", _system));
+    ast = semantik.starten();
+
+    for (auto [name, symbol] : semantik.global()->symbole())
+    {
+        if (!registrieren(symbol))
+        {
+            panik(symbol, "Symbol konnte nicht registriert werden.");
+        }
     }
 }
 
@@ -841,39 +1231,7 @@ Semantik::zone_verlassen()
 }
 
 bool
-Semantik::datentypen_kompatibel(Datentyp *links, Datentyp *rechts)
-{
-    // INFO: wenn einer davon null ist => ungültig
-    if (links == nullptr || rechts == nullptr)
-    {
-        return false;
-    }
-
-    // INFO: wenn beide vom gleichen typ sind => dann kompatibel
-    if (links == rechts)
-    {
-        return true;
-    }
-
-    // INFO: wenn die art gleich ist und der rechte datentyp in den linken
-    //       reinpasst => dann kompatibel
-    if (links->art() == rechts->art() && links->größe() >= rechts->größe())
-    {
-        return true;
-    }
-
-    // INFO: bool und ganze- und natürliche zahlen sind kompatibel
-    if (links->art() == Datentyp::BOOL && rechts->art() == Datentyp::GANZE_ZAHL ||
-        links->art() == Datentyp::GANZE_ZAHL && rechts->art() == Datentyp::BOOL)
-    {
-        return true;
-    }
-
-    return false;
-}
-
-bool
-Semantik::operanden_kompatibel(Operand *links, Operand *rechts)
+Semantik::operanden_kompatibel(Operand *ziel, Operand *quelle)
 {
     return false;
 }
@@ -881,23 +1239,23 @@ Semantik::operanden_kompatibel(Operand *links, Operand *rechts)
 void
 Semantik::system_zone_initialisieren(Zone *zone)
 {
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "n8",   global_datentyp_g8));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "n16",  global_datentyp_g16));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "n32",  global_datentyp_g32));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "n64",  global_datentyp_g64));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "n128", global_datentyp_g128));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n8",   global_datentyp_g8));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n16",  global_datentyp_g16));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n32",  global_datentyp_g32));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n64",  global_datentyp_g64));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n128", global_datentyp_g128));
 
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "g8",   global_datentyp_g8));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "g16",  global_datentyp_g16));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "g32",  global_datentyp_g32));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "g64",  global_datentyp_g64));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "g128", global_datentyp_g128));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g8",   global_datentyp_g8));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g16",  global_datentyp_g16));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g32",  global_datentyp_g32));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g64",  global_datentyp_g64));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g128", global_datentyp_g128));
 
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "d32", global_datentyp_d32));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "d64", global_datentyp_d64));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "d32", global_datentyp_d32));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "d64", global_datentyp_d64));
 
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "text", global_datentyp_text));
-    zone->registrieren(new Symbol(Symbol::DATENTYP, Symbol::BEHANDELT, "bool", new Datentyp(Datentyp::BOOL, 4)));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "text", global_datentyp_text));
+    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "bool", global_datentyp_bool));
 }
 
 }

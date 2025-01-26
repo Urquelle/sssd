@@ -2,10 +2,12 @@
 
 #include <string>
 
+#include "kmp/spanne.hpp"
+
 namespace Sss::Kmp {
 
-class Zone;
 class Datentyp;
+class Zone;
 
 #define Symbol_Art_Liste \
     X(VARIABLE,  1, "Variable") \
@@ -35,14 +37,15 @@ public:
     #undef X
     };
 
-    Symbol(Art art, Status status, std::string name);
-    Symbol(Art art, Status status, std::string name, Datentyp *datentyp);
-    Symbol(Art art, Status status, std::string name, Zone *zone);
+    Symbol(Spanne spanne, Art art, Status status, std::string name, Datentyp *datentyp);
+    Symbol(Spanne spanne, Art art, Status status, std::string name);
+    Symbol(Spanne spanne, Art art, Status status, std::string name, Zone *zone);
 
     Art art() const;
     Status status() const;
     void status_setzen(Status status);
     std::string name() const;
+    Spanne spanne() const;
 
     Zone *zone() const;
 
@@ -55,6 +58,7 @@ private:
     std::string _name;
     Datentyp *_datentyp;
     Zone *_zone;
+    Spanne _spanne;
 };
 
 }

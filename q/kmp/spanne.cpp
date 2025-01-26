@@ -78,9 +78,9 @@ Spanne::länge() const
 bool
 Spanne::ist_leer() const
 {
-    // AUFGABE: implementieren
+    auto res = _länge == 0;
 
-    return true;
+    return res;
 }
 
 std::ostream&

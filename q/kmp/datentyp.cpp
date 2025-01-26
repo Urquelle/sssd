@@ -1,10 +1,127 @@
 #include "datentyp.hpp"
 
+#include <iostream>
+#include <cassert>
+
+#include "kmp/symbol.hpp"
+#include "kmp/zone.hpp"
+
 namespace Sss::Kmp {
 
-Datentyp::Datentyp(Datentyp::Art art, size_t größe)
+Datentyp::Kompatibilität
+Datentyp::datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit)
+{
+    // INFO: wenn einer davon null ist => ungültig
+    if (ziel == nullptr || quelle == nullptr)
+    {
+        return Datentyp::INKOMPATIBEL;
+    }
+
+    // INFO: wenn beide vom gleichen typ sind => dann kompatibel
+    if (ziel == quelle)
+    {
+        return Datentyp::KOMPATIBEL;
+    }
+
+    // INFO: wenn die art gleich ist und der rechte datentyp in den linken
+    //       reinpasst => dann kompatibel
+    if (ziel->art() == quelle->art() && ziel->größe() >= quelle->größe())
+    {
+        return Datentyp::KOMPATIBEL;
+    }
+
+    switch (ziel->art())
+    {
+        case Datentyp::DEZIMAL_ZAHL:
+        {
+            // Implizite Konvertierung von ganzen Zahlen zu Dezimalzahlen erlauben
+            if (quelle->art() == Datentyp::GANZE_ZAHL)
+            {
+                return Datentyp::KOMPATIBEL;
+            }
+        } break;
+
+        case Datentyp::GANZE_ZAHL:
+        {
+            if (quelle->art() == Datentyp::GANZE_ZAHL)
+            {
+                // INFO: Kleinere ganze Zahlen in größere konvertieren
+                return ziel->größe() >= quelle->größe() ? Datentyp::KOMPATIBEL : Datentyp::INKOMPATIBEL;
+            }
+
+            // INFO: Von bool nach ganzer Zahl nur wenn implizit erlaubt
+            if (quelle->art() == Datentyp::BOOL && implizit)
+            {
+                return Datentyp::KOMPATIBEL;
+            }
+
+            if (quelle->art() == Datentyp::DEZIMAL_ZAHL && implizit)
+            {
+                std::cout << "Bei einer Umwandlung einer Dezimalzahl in eine Ganzzahl gehen Daten verloren!";
+
+                return Datentyp::KOMPATIBEL_MIT_DATENVERLUST;
+            }
+        } break;
+
+        case Datentyp::BOOL:
+        {
+            // INFO: Ganze Zahlen nach bool nur wenn implizit erlaubt
+            if (quelle->art() == Datentyp::GANZE_ZAHL && implizit)
+            {
+                return Datentyp::KOMPATIBEL;
+            }
+
+        } break;
+
+        case Datentyp::ZEIGER:
+        {
+            if (quelle->art() == Datentyp::ZEIGER)
+            {
+                auto *ziel_basis = ziel->als<Datentyp_Zeiger*>()->basis();
+                auto *quelle_basis = quelle->als<Datentyp_Zeiger*>()->basis();
+
+                // Nullzeiger erlauben
+                if (quelle_basis->art() == Datentyp::NICHTS)
+                {
+                    return Datentyp::KOMPATIBEL;
+                }
+
+                // Zeiger-Hierarchie prüfen
+                return datentypen_kompatibel(ziel_basis, quelle_basis, false);
+            }
+        } break;
+
+        case Datentyp::SCHABLONE:
+        {
+            if (quelle->art() != Datentyp::SCHABLONE)
+            {
+                return Datentyp::INKOMPATIBEL;
+            }
+
+            if (quelle->symbol() == ziel->symbol())
+            {
+                return Datentyp::KOMPATIBEL;
+            }
+
+            for (auto *eigenschaft : quelle->als<Datentyp_Schablone *>()->eigenschaften())
+            {
+                if (!ziel->symbol()->zone()->suchen(eigenschaft->name()))
+                {
+                    return Datentyp::INKOMPATIBEL;
+                }
+            }
+        } break;
+    }
+
+    return Datentyp::INKOMPATIBEL;
+}
+
+Datentyp::Datentyp(Datentyp::Art art, size_t größe, bool abgeschlossen)
     : _art(art)
     , _größe(größe)
+    , _symbol(nullptr)
+    , _deklaration(nullptr)
+    , _abgeschlossen(abgeschlossen)
 {
 }
 
@@ -18,6 +135,12 @@ Datentyp::Status
 Datentyp::status() const
 {
     return _status;
+}
+
+void
+Datentyp::status_setzen(Datentyp::Status status)
+{
+    _status = status;
 }
 
 bool
@@ -42,6 +165,30 @@ void
 Datentyp::größe_setzen(size_t größe)
 {
     _größe = größe;
+}
+
+Symbol *
+Datentyp::symbol() const
+{
+    return _symbol;
+}
+
+void
+Datentyp::symbol_setzen(Symbol *symbol)
+{
+    _symbol = symbol;
+}
+
+Deklaration *
+Datentyp::deklaration() const
+{
+    return _deklaration;
+}
+
+void
+Datentyp::deklaration_setzen(Deklaration *deklaration)
+{
+    _deklaration = deklaration;
 }
 
 template<typename T>
@@ -110,11 +257,21 @@ Datentyp_Schablone::eigenschaften() const
     return _eigenschaften;
 }
 
-void
+bool
 Datentyp_Schablone::eigenschaft_hinzufügen(Datentyp *datentyp, size_t versatz, std::string name)
 {
     auto *eigenschaft = new Datentyp_Schablone::Eigenschaft(datentyp, versatz, name);
+
+    for (auto *e : _eigenschaften)
+    {
+        if (e->name() == name)
+        {
+            return false;
+        }
+    }
     _eigenschaften.push_back(eigenschaft);
+
+    return true;
 }
 
 Datentyp_Schablone::Eigenschaft::Eigenschaft(Datentyp *datentyp, size_t versatz, std::string name)
@@ -180,10 +337,38 @@ Datentyp_Funktion::rückgabe() const
     return _rückgabe;
 }
 
+Datentyp_Anon::Datentyp_Anon(std::vector<Datentyp_Anon::Eigenschaft *> eigenschaften)
+    : Datentyp(Datentyp::ANON, 8)
+    , _eigenschaften(std::move(eigenschaften))
+{
+}
+
+Datentyp_Anon::Eigenschaft::Eigenschaft(Datentyp *datentyp, size_t versatz, std::string name)
+    : _datentyp(datentyp)
+    , _versatz(versatz)
+    , _name(name)
+{
+}
+
 Datentyp_Opt::Datentyp_Opt(Datentyp *basis)
     : Datentyp(Datentyp::OPT, 8)
     , _basis(basis)
 {
+}
+
+Datentyp_Opt::Eigenschaft::Eigenschaft(Datentyp *datentyp, Operand *operand, std::string& name)
+    : _datentyp(datentyp)
+    , _operand(operand)
+    , _name(std::move(name))
+{
+}
+
+void
+Datentyp_Opt::eigenschaft_hinzufügen(Datentyp *datentyp, Operand *operand, std::string& name)
+{
+    Datentyp_Opt::Eigenschaft *eigenschaft = new Datentyp_Opt::Eigenschaft(datentyp, operand, name);
+
+    _eigenschaften.push_back(eigenschaft);
 }
 
 }

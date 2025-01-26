@@ -6,7 +6,8 @@
 namespace Sss::Kmp {
 
 #define Operand_Merkmal_Liste \
-    X(LITERAL, 1, "Literal")
+    X(LITERAL, 1, "Literal") \
+    X(ARITHMETISCH, 2, "Arithmetisch")
 
 class Operand
 {
@@ -31,6 +32,8 @@ public:
     bool merkmal_gesetzt(Merkmal merkmal) const;
     void merkmal_setzen(Merkmal merkmal);
     void merkmal_löschen(Merkmal merkmal);
+
+    bool ist_arithmetisch() const;
 
 private:
     Datentyp *_datentyp;

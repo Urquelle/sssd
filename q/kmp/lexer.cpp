@@ -103,7 +103,7 @@ Lexer::starten(int32_t position)
             if (z.codepoint() == '>')
             {
                 weiter();
-                erg.push_back(new Glied(Glied::FOLGERUNG, Spanne(anfang, z)));
+                erg.push_back(new Glied(Glied::DREIECK_RECHTS, Spanne(anfang, z)));
             }
             else
             {
@@ -277,6 +277,11 @@ wiederholung:
                 weiter();
                 erg.push_back(new Glied(Glied::GLEICH, Spanne(anfang, z)));
             }
+            else if (z.codepoint() == '>')
+            {
+                weiter();
+                erg.push_back(new Glied(Glied::FOLGERUNG, Spanne(anfang, z)));
+            }
             else
             {
                 erg.push_back(new Glied(Glied::ZUWEISUNG, Spanne(anfang, zeichen(-1))));
@@ -291,6 +296,11 @@ wiederholung:
             {
                 weiter();
                 erg.push_back(new Glied(Glied::KLEINER_GLEICH, Spanne(anfang, z)));
+            }
+            else if (z.codepoint() == '|')
+            {
+                weiter();
+                erg.push_back(new Glied(Glied::DREIECK_LINKS, Spanne(anfang, z)));
             }
             else
             {

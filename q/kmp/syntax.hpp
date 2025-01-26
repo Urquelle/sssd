@@ -19,6 +19,7 @@ public:
 
     Ergebnis<Ausdruck *> ausdruck_einlesen();
     Ergebnis<Ausdruck *> reihe_ausdruck_einlesen();
+    Ergebnis<Ausdruck *> bitschieben_ausdruck_einlesen();
     Ergebnis<Ausdruck *> vergleich_ausdruck_einlesen();
     Ergebnis<Ausdruck *> add_ausdruck_einlesen();
     Ergebnis<Ausdruck *> mult_ausdruck_einlesen();
@@ -38,6 +39,7 @@ public:
     Anweisung * weiche_anweisung_einlesen();
     Anweisung * deklaration_anweisung_einlesen();
     Anweisung * danach_anweisung_einlesen();
+    Anweisung * res_anweisung_einlesen();
 
     std::vector<Marke *> marken_einlesen();
 
@@ -45,7 +47,7 @@ public:
     Glied * weiter(int32_t anzahl = 1);
     Glied * erwarte(Glied::Art art);
     bool    passt(Glied::Art art);
-    bool    ist(Glied::Art art);
+    bool    ist(Glied::Art art, int32_t versatz = 0);
 
     Diagnostik diagnostik() const;
     void melden(Spanne spanne, Fehler *fehler);

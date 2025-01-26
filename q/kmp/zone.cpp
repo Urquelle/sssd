@@ -1,5 +1,7 @@
 #include "zone.hpp"
 
+#include "kmp/datentyp.hpp"
+
 namespace Sss::Kmp {
 
 Zone::Zone()
@@ -87,6 +89,48 @@ Zone::suchen(std::string name, bool über_suche)
     }
 
     return nullptr;
+}
+
+bool
+Zone::registrieren_funktion(Symbol *symbol)
+{
+    auto* neue_funktion = symbol->datentyp()->als<Datentyp_Funktion *>();
+    auto& überladungen = _überladungen[symbol->name()];
+
+    // Prüfen ob eine identische Signatur bereits existiert
+    for (auto* existierend : überladungen)
+    {
+        auto* existierende_funktion =
+            existierend->datentyp()->als<Datentyp_Funktion *>();
+
+        if (sind_signaturen_gleich(neue_funktion, existierende_funktion))
+        {
+            return false;  // Identische Signatur bereits vorhanden
+        }
+    }
+
+    überladungen.push_back(symbol);
+
+    return true;
+}
+
+bool
+Zone::sind_signaturen_gleich(Datentyp_Funktion* f1, Datentyp_Funktion* f2)
+{
+    if (f1->parameter().size() != f2->parameter().size())
+    {
+        return false;
+    }
+
+    for (size_t i = 0; i < f1->parameter().size(); ++i)
+    {
+        if (!Datentyp::datentypen_kompatibel(f1->parameter()[i], f2->parameter()[i]))
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 }

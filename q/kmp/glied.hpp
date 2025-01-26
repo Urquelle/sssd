@@ -31,6 +31,8 @@
     X(TILDE,             25, "Tilde") \
     X(BALKEN,            26, "Balken") \
     X(FOLGERUNG,         27, "Folgerung") \
+    X(DREIECK_RECHTS,    28, "Dreieck Rechts") \
+    X(DREIECK_LINKS,     29, "Dreieck Links") \
     \
     X(KLEINER,           30, "Kleiner") \
     X(KLEINER_GLEICH,    31, "Kleinergleich") \

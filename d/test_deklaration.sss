@@ -1,7 +1,7 @@
 Art || opt {
     Eins.
     Zwei | text.
-    Drei | Vektor2 = { .x = 15 }
+    Drei | Vektor2 = { /x = 15 }
 }
 
 ## variablendeklarationen
@@ -9,33 +9,53 @@ abc1 | Vektor2.
 
 ## mit datentypherleitung
 abc2 |= 12.
-abc3 | Vektor2 = { .x = 123,45 }.
+abc3 | Vektor2 = { /x = 123,45 }.
 
 xyz || (a| g32 = -314; b| d64; c| n32 = 15) -> g32.
-zyx || (b| [10] Vektor2; c| *g32; yy| (z1| g32) -> g32)
+zyx || (b| [10] Vektor2; c| *g32; yy| (z1| g32) -> g32) -> Vektor2
 {
     a |= 314.
 
     x1 | Vektor2 = {
-        .x = 10; .y = 15;
+        /x = 10; /y = 15;
     }.
 
     x2 |= {
-        .x = 10; .y = 15;
+        /x = 10; /y = 15;
     } <Vektor2>.
 
     xyz(a; 35,014; x1/x).
 
     ## mustervergleich
     weiche x2 {
-        { .x = 15 } |> {
+        { /x = 15 } => {
             ## eigenschaftszugriff
             x1/x = 15.
         }
     }
+
+    ## variable mit unbenanntem datentyp
+    anon |= {
+        /r = 128;
+        /g = 128;
+        /b = 128;
+        /a = 256;
+    }.
+
+    schieb_links  |= 1 <| 5.
+    schieb_rechts |= 1 |> 5.
+
+    ##(
+        folgende rückgabe geht nicht, da kein datentyp angegeben ist. ich will aber, dass es funktioniert und der
+        datentyp aus dem rückgabetyp der funktion hergeleitet wird.
+    ##)
+    res {
+        /x = a; /y = 15
+    }.
 }
 
 Vektor2 || schablone {
     x, y| d32.
-    z| Vektor2.
+
+    z| *Vektor2.
 }

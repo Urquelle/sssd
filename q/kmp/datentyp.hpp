@@ -17,11 +17,19 @@ namespace Sss::Kmp {
     X(ZEIGER,             4, "Zeiger") \
     X(SCHABLONE,          5, "Schablone") \
     X(FUNKTION,           6, "Funktion") \
-    X(BOOL,               7, "Bool") \
+    X(BOOL,               7, "Wahrheitswert") \
     X(AUFZÄHLUNG,         8, "Aufzählung") \
     X(FELD,               9, "Feld") \
     X(NICHTS,            10, "Nichts") \
-    X(OPT,               11, "Opt")
+    X(OPT,               11, "Opt") \
+    X(ANON,              12, "Anon")
+
+#define Kompatibilität_Liste \
+    X(INKOMPATIBEL,         0, "Inkompatibel") \
+    X(KOMPATIBEL,           1, "Kompatibel") \
+    X(KOMPATIBEL_IMPLIZIT,  2, "Implizit") \
+    X(KOMPATIBEL_MIT_DATENVERLUST, 3, "Kompatibel mit Datenverlust") \
+
 #if 0
     TYPE_VOID,
     TYPE_CHAR,
@@ -32,8 +40,11 @@ namespace Sss::Kmp {
 #endif
 
 class Ausdruck;
+class Deklaration;
 class Deklaration_Schablone;
 class Deklaration_Opt;
+class Operand;
+class Symbol;
 
 class Datentyp
 {
@@ -52,15 +63,32 @@ public:
     #undef X
     };
 
-    Datentyp(Art art, size_t größe);
+    enum Kompatibilität
+    {
+    #define X(N, W, ...) N = W,
+        Kompatibilität_Liste
+    #undef X
+    };
+
+    static Kompatibilität datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit = true);
+
+    Datentyp(Art art, size_t größe, bool abgeschlossen = false);
 
     Art art() const;
-    Status status() const;
     bool abgeschlossen() const;
     void abschließen();
 
+    Status status() const;
+    void status_setzen(Status status);
+
     size_t größe() const;
     void größe_setzen(size_t größe);
+
+    Symbol * symbol() const;
+    void symbol_setzen(Symbol *symbol);
+
+    Deklaration * deklaration() const;
+    void deklaration_setzen(Deklaration *deklaration);
 
     template<typename T> T als();
     virtual void ausgeben(int32_t tiefe, std::ostream &ausgabe);
@@ -69,6 +97,8 @@ protected:
     Art _art;
     Status _status;
     uint32_t _merkmale;
+    Symbol * _symbol;
+    Deklaration * _deklaration;
     size_t _größe;
     bool _abgeschlossen { false };
 };
@@ -118,6 +148,35 @@ public:
     Datentyp_Schablone(Deklaration_Schablone *deklaration);
 
     std::vector<Eigenschaft *> eigenschaften() const;
+    bool eigenschaft_hinzufügen(Datentyp *datentyp, size_t versatz, std::string name);
+    Deklaration_Schablone *deklaration() const;
+
+private:
+    std::vector<Eigenschaft *> _eigenschaften;
+    Deklaration_Schablone *_deklaration;
+};
+
+class Datentyp_Anon : public Datentyp
+{
+public:
+    class Eigenschaft
+    {
+    public:
+        Eigenschaft(Datentyp *datentyp, size_t versatz, std::string name);
+
+        Datentyp *datentyp() const;
+        size_t versatz() const;
+        std::string name() const;
+
+    private:
+        Datentyp *_datentyp;
+        size_t _versatz;
+        std::string _name;
+    };
+
+    Datentyp_Anon(std::vector<Eigenschaft *> eigenschaften);
+
+    std::vector<Eigenschaft *> eigenschaften() const;
     void eigenschaft_hinzufügen(Datentyp *datentyp, size_t versatz, std::string name);
     Deklaration_Schablone *deklaration() const;
 
@@ -148,10 +207,17 @@ public:
     class Eigenschaft
     {
     public:
-        Eigenschaft(std::string name, Ausdruck *wert = nullptr);
+        Eigenschaft(Datentyp *datentyp, Operand *operand, std::string& name);
+
+    private:
+        Datentyp *_datentyp;
+        Operand *_operand;
+        std::string _name;
     };
 
     Datentyp_Opt(Datentyp *basis = nullptr);
+
+    void eigenschaft_hinzufügen(Datentyp *datentyp, Operand *operand, std::string& name);
 
 private:
     Datentyp *_basis { nullptr };

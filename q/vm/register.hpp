@@ -6,9 +6,9 @@ namespace Sss::Vm {
 
 enum class Schalter : uint16_t
 {
-    Null,
-    Negativ,
-    Positiv
+    Null    = 0,
+    Negativ = 1,
+    Positiv = 2,
 };
 
 enum class Register : uint16_t

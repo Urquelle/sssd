@@ -42,7 +42,7 @@
     X(ANWEISUNG_AUSDRUCK,           47, "Anweisung Ausdruck") \
     X(ANWEISUNG_DANACH,             48, "Anweisung Danach") \
     X(ANWEISUNG_WEICHE,             49, "Anweisung Weiche") \
-    X(ANWEISUNG_ERG,                50, "Anweisung Erg")
+    X(ANWEISUNG_RES,                50, "Anweisung Res")
 
 namespace Sss::Kmp {
 
@@ -184,7 +184,9 @@ private:
     X(KLEINER,         8, "Kleiner") \
     X(KLEINER_GLEICH,  9, "Kleinergleich") \
     X(GRÖẞER,         10, "Größer") \
-    X(GRÖẞER_GLEICH,  11, "Größergleich")
+    X(GRÖẞER_GLEICH,  11, "Größergleich") \
+    X(BIT_SCHIEB_L,   12, "Bit verschieben links") \
+    X(BIT_SCHIEB_R,   13, "Bit verschieben rechts")
 
 class Ausdruck_Binär : public Ausdruck
 {
@@ -503,12 +505,12 @@ private:
 class Deklaration_Opt : public Deklaration
 {
 public:
-    Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration *> eigenschaften);
+    Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften);
 
-    std::vector<Deklaration *> eigenschaften() const;
+    std::vector<Deklaration_Variable *> eigenschaften() const;
 
 private:
-    std::vector<Deklaration *> _eigenschaften;
+    std::vector<Deklaration_Variable *> _eigenschaften;
 };
 // }}}
 /* anweisungen {{{ */
@@ -596,6 +598,8 @@ public:
 
     Deklaration *deklaration() const;
 
+    void ausgeben(int32_t tiefe, std::ostream &ausgabe) override;
+
 private:
     Deklaration *_deklaration;
 };
@@ -606,6 +610,8 @@ public:
     Anweisung_Brauche(Spanne spanne, std::string dateiname);
 
     std::string dateiname() const;
+
+    void ausgeben(int32_t tiefe, std::ostream &ausgabe) override;
 
 private:
     std::string _dateiname;
@@ -628,6 +634,8 @@ public:
     Anweisung_Ausdruck(Spanne spanne, Ausdruck *ausdruck);
 
     Ausdruck * ausdruck() const;
+
+    void ausgeben(int32_t tiefe, std::ostream &ausgabe) override;
 
 private:
     Ausdruck *_ausdruck;
@@ -655,6 +663,17 @@ public:
 private:
     Ausdruck *_ausdruck;
     std::vector<Muster *> _muster;
+};
+
+class Anweisung_Res : public Anweisung
+{
+public:
+    Anweisung_Res(Spanne spanne, Ausdruck *ausdruck);
+
+    Ausdruck *ausdruck() const;
+
+private:
+    Ausdruck *_ausdruck;
 };
 /* }}} */
 

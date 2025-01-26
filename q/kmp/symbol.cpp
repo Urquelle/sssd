@@ -3,26 +3,28 @@
 
 namespace Sss::Kmp {
 
-Symbol::Symbol(Symbol::Art art, Symbol::Status status, std::string name, Datentyp *datentyp)
+Symbol::Symbol(Spanne spanne, Symbol::Art art, Symbol::Status status, std::string name, Datentyp *datentyp)
     : _art(art)
     , _status(status)
     , _name(name)
     , _datentyp(datentyp)
     , _zone(new Zone())
+    , _spanne(spanne)
 {
 }
 
-Symbol::Symbol(Symbol::Art art, Symbol::Status status, std::string name, Zone *zone)
+Symbol::Symbol(Spanne spanne, Symbol::Art art, Symbol::Status status, std::string name, Zone *zone)
     : _art(art)
     , _status(status)
     , _name(name)
     , _datentyp(nullptr)
     , _zone(zone)
+    , _spanne(spanne)
 {
 }
 
-Symbol::Symbol(Symbol::Art art, Symbol::Status status, std::string name)
-    : Symbol(art, status, name, (Datentyp *) nullptr)
+Symbol::Symbol(Spanne spanne, Symbol::Art art, Symbol::Status status, std::string name)
+    : Symbol(spanne, art, status, name, (Datentyp *) nullptr)
 {
 }
 
@@ -36,6 +38,12 @@ Symbol::Status
 Symbol::status() const
 {
     return _status;
+}
+
+Spanne
+Symbol::spanne() const
+{
+    return _spanne;
 }
 
 void

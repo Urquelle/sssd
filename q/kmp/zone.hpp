@@ -2,10 +2,13 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "kmp/symbol.hpp"
 
 namespace Sss::Kmp {
+
+class Datentyp_Funktion;
 
 class Zone
 {
@@ -25,7 +28,13 @@ public:
     Symbol * suchen(std::string name, bool über_suche = true);
 
 private:
+    bool registrieren_funktion(Symbol *symbol);
+
+    std::map<std::string, std::vector<Symbol *>> _überladungen;
     std::map<std::string, Symbol *> _symbole;
+
+    bool sind_signaturen_gleich(Datentyp_Funktion *f1, Datentyp_Funktion *f2);
+
     std::string _name;
     Zone *_über;
 };

@@ -45,7 +45,7 @@ Diagnostik::meldungen()
 
 std::ostream& operator<<(std::ostream& ausgabe, const Diagnostik::Meldung& m)
 {
-    datei_verknüpfung_ausgeben(m.spanne.von().quelldatei().c_str(), 0);
+    datei_verknüpfung_ausgeben(m.spanne.von().quelldatei().c_str(), m.spanne.von().versatz());
     ausgabe << " fehler: " << m.fehler->text << std::endl;
 
     return ausgabe;

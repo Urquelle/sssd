@@ -170,6 +170,18 @@ Ausdruck_Binär::op() const
     return _op;
 }
 
+Ausdruck *
+Ausdruck_Binär::links() const
+{
+    return _links;
+}
+
+Ausdruck *
+Ausdruck_Binär::rechts() const
+{
+    return _rechts;
+}
+
 void
 Ausdruck_Binär::ausgeben(int32_t tiefe, std::ostream &ausgabe)
 {
@@ -430,6 +442,12 @@ bool
 Ausdruck_Kompositum::Eigenschaft::ist_benamt() const
 {
     return _ist_benamt;
+}
+
+Spanne
+Ausdruck_Kompositum::Eigenschaft::spanne() const
+{
+    return _spanne;
 }
 // }}}
 // spezifizierung {{{
@@ -732,13 +750,13 @@ Deklaration_Brauche::name() const
     return erg;
 }
 
-Deklaration_Opt::Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration *> eigenschaften)
+Deklaration_Opt::Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften)
     : Deklaration(Ast_Knoten::DEKLARATION_OPT, spanne, name)
     , _eigenschaften(eigenschaften)
 {
 }
 
-std::vector<Deklaration *>
+std::vector<Deklaration_Variable *>
 Deklaration_Opt::eigenschaften() const
 {
     return _eigenschaften;
@@ -941,6 +959,14 @@ Anweisung_Deklaration::deklaration() const
     return _deklaration;
 }
 
+void
+Anweisung_Deklaration::ausgeben(int32_t tiefe, std::ostream& ausgabe)
+{
+    Ast_Knoten::ausgeben(tiefe, ausgabe);
+
+    _deklaration->ausgeben(tiefe+1, ausgabe);
+}
+
 Anweisung_Brauche::Anweisung_Brauche(Spanne spanne, std::string dateiname)
     : Anweisung(Ast_Knoten::ANWEISUNG_BRAUCHE, spanne)
     , _dateiname(dateiname)
@@ -951,6 +977,14 @@ std::string
 Anweisung_Brauche::dateiname() const
 {
     return _dateiname;
+}
+
+void
+Anweisung_Brauche::ausgeben(int32_t tiefe, std::ostream &ausgabe)
+{
+    Ast_Knoten::ausgeben(tiefe, ausgabe);
+    ausgabe.put('\n');
+    ausgabe << std::string((tiefe+1)*4, ' ') << _dateiname;
 }
 
 Anweisung_Lade::Anweisung_Lade(Spanne spanne, std::string dateiname)
@@ -975,6 +1009,14 @@ Ausdruck *
 Anweisung_Ausdruck::ausdruck() const
 {
     return _ausdruck;
+}
+
+void
+Anweisung_Ausdruck::ausgeben(int32_t tiefe, std::ostream &ausgabe)
+{
+    Ast_Knoten::ausgeben(tiefe, ausgabe);
+
+    _ausdruck->ausgeben(tiefe+1, ausgabe);
 }
 
 Anweisung_Danach::Anweisung_Danach(Spanne spanne, Anweisung *anweisung)
@@ -1006,6 +1048,18 @@ std::vector<Muster *>
 Anweisung_Weiche::muster() const
 {
     return _muster;
+}
+
+Anweisung_Res::Anweisung_Res(Spanne spanne, Ausdruck *ausdruck)
+    : Anweisung(Ast_Knoten::ANWEISUNG_RES, spanne)
+    , _ausdruck(ausdruck)
+{
+}
+
+Ausdruck *
+Anweisung_Res::ausdruck() const
+{
+    return _ausdruck;
 }
 // }}}
 }

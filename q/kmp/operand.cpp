@@ -63,4 +63,12 @@ Operand::merkmal_löschen(Merkmal merkmal)
     _merkmale = _merkmale & ~merkmal;
 }
 
+bool
+Operand::ist_arithmetisch() const
+{
+    bool erg = merkmal_gesetzt(Operand::ARITHMETISCH);
+
+    return erg;
+}
+
 }

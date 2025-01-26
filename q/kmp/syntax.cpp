@@ -12,17 +12,18 @@ Sss::Kmp::Ausdruck_Unär::Unär_Op   token_zu_unär_op(Sss::Kmp::Glied *token);
 
 namespace Sss::Kmp {
 
-const char * SCHLÜSSELWORT_SCHABLONE = "schablone";
-const char * SCHLÜSSELWORT_MERKMAL   = "merkmal"; // INFO: trait
-const char * SCHLÜSSELWORT_OPT       = "opt";
-const char * SCHLÜSSELWORT_WEICHE    = "weiche";
-const char * SCHLÜSSELWORT_WENN      = "wenn";
-const char * SCHLÜSSELWORT_FÜR       = "für";
-const char * SCHLÜSSELWORT_SONST     = "sonst";
-const char * SCHLÜSSELWORT_BRAUCHE   = "brauche";
-const char * SCHLÜSSELWORT_LADE      = "lade";
-const char * SCHLÜSSELWORT_DANACH    = "danach"; // INFO: defer
-const char * SCHLÜSSELWORT_ERG       = "erg";
+const char * SCHLÜSSELWORT_SCHABLONE = "schablone";  // INFO: struct
+const char * SCHLÜSSELWORT_MERKMAL   = "merkmal";    // INFO: trait
+const char * SCHLÜSSELWORT_OPT       = "opt";        // INFO: enum
+const char * SCHLÜSSELWORT_WEICHE    = "weiche";     // INFO: match
+const char * SCHLÜSSELWORT_WENN      = "wenn";       // INFO: if
+const char * SCHLÜSSELWORT_FÜR       = "für";        // INFO: for
+const char * SCHLÜSSELWORT_SONST     = "sonst";      // INFO: else
+const char * SCHLÜSSELWORT_BRAUCHE   = "brauche";    // INFO: import
+const char * SCHLÜSSELWORT_LADE      = "lade";       // INFO: include
+const char * SCHLÜSSELWORT_DANACH    = "danach";     // INFO: defer
+const char * SCHLÜSSELWORT_RES       = "res";        // INFO: resultat -> return
+const char * SCHLÜSSELWORT_MARKE     = "marke";
 
 Syntax::Syntax(std::vector<Glied *> token)
     : _token(token)
@@ -34,6 +35,7 @@ void
 Syntax::melden(Spanne spanne, Fehler *fehler)
 {
     _diagnostik.melden(spanne, fehler);
+    __debugbreak();
 }
 
 void
@@ -127,7 +129,7 @@ Syntax::marken_einlesen()
         return erg;
     }
 
-    if (token(1)->art() != Glied::BEZEICHNER || strcmp(token(1)->text(), "marke") != 0)
+    if (!ist(Glied::BEZEICHNER, 1) || strcmp(token(1)->text(), SCHLÜSSELWORT_MARKE) != 0)
     {
         return erg;
     }
@@ -149,7 +151,7 @@ Syntax::marken_einlesen()
         }
 
         erg.push_back(new Marke(
-            ausdruck.wert()->spanne(), 
+            ausdruck.wert()->spanne(),
             ausdruck.wert()->als<Ausdruck_Bezeichner *>()->wert()
         ));
 
@@ -193,6 +195,11 @@ Syntax::anweisung_einlesen()
     else if (token()->art() == Glied::BEZEICHNER && strcmp(token()->text(), SCHLÜSSELWORT_DANACH) == 0)
     {
         anweisung = danach_anweisung_einlesen();
+    }
+
+    else if (token()->art()  == Glied::BEZEICHNER && strcmp(token()->text(), SCHLÜSSELWORT_RES) == 0)
+    {
+        anweisung = res_anweisung_einlesen();
     }
 
     else if (token()->art()  == Glied::BEZEICHNER && token(1)->art() == Glied::BALKEN)
@@ -482,6 +489,19 @@ Syntax::danach_anweisung_einlesen()
         anweisung.wert()
     );
 }
+
+Anweisung *
+Syntax::res_anweisung_einlesen()
+{
+    auto *schlüsselwort = weiter();
+
+    auto ausdruck = ausdruck_einlesen();
+
+    return new Anweisung_Res(
+        Spanne(schlüsselwort->spanne(), ausdruck.wert()->spanne()),
+        ausdruck.wert()
+    );
+}
 // }}}
 // deklaration {{{
 Deklaration *
@@ -619,7 +639,7 @@ Syntax::deklaration_einlesen(bool mit_abschluss)
             auto *schlüsselwort = weiter();
 
             erwarte(Glied::GKLAMMER_AUF);
-            std::vector<Deklaration *> eigenschaften;
+            std::vector<Deklaration_Variable *> eigenschaften;
 
             for (;;)
             {
@@ -764,9 +784,35 @@ Syntax::reihe_ausdruck_einlesen()
 Ergebnis<Ausdruck *>
 Syntax::vergleich_ausdruck_einlesen()
 {
-    auto links = add_ausdruck_einlesen();
+    auto links = bitschieben_ausdruck_einlesen();
 
     if (token()->art() >= Glied::KLEINER && token()->art() <= Glied::GRÖẞER)
+    {
+        auto *op = weiter();
+        auto rechts = bitschieben_ausdruck_einlesen();
+
+        if (rechts.schlecht())
+        {
+            assert(!"meldung erstatten");
+        }
+
+        links = new Ausdruck_Binär(
+            Spanne(links.wert()->spanne().von(), rechts.wert()->spanne().bis()),
+            token_zu_binär_op(op),
+            links.wert(),
+            rechts.wert()
+        );
+    }
+
+    return links;
+}
+
+Ergebnis<Ausdruck *>
+Syntax::bitschieben_ausdruck_einlesen()
+{
+    auto links = add_ausdruck_einlesen();
+
+    if (ist(Glied::DREIECK_LINKS) || ist(Glied::DREIECK_RECHTS))
     {
         auto *op = weiter();
         auto rechts = add_ausdruck_einlesen();
@@ -1037,7 +1083,7 @@ Syntax::basis_ausdruck_einlesen()
             {
                 for (;;)
                 {
-                    if (passt(Glied::PUNKT))
+                    if (passt(Glied::PISA))
                     {
                         ist_benamt = true;
 
@@ -1215,9 +1261,9 @@ Syntax::token(int32_t versatz) const
 }
 
 bool
-Syntax::ist(Glied::Art art)
+Syntax::ist(Glied::Art art, int32_t versatz)
 {
-    auto erg = token()->art() == art;
+    auto erg = token(versatz)->art() == art;
 
     return erg;
 }
@@ -1264,6 +1310,8 @@ token_zu_binär_op(Sss::Kmp::Glied *token)
         case Glied::UNGLEICH:       return Ausdruck_Binär::UNGLEICH;
         case Glied::GRÖẞER_GLEICH:  return Ausdruck_Binär::GRÖẞER_GLEICH;
         case Glied::GRÖẞER:         return Ausdruck_Binär::GRÖẞER;
+        case Glied::DREIECK_RECHTS: return Ausdruck_Binär::BIT_SCHIEB_R;
+        case Glied::DREIECK_LINKS:  return Ausdruck_Binär::BIT_SCHIEB_L;
 
         default:
             assert(!"unbekannter op");
