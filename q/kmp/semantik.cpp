@@ -406,7 +406,8 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
         zone_betreten(symbol->zone());
 
         // AUFGABE: überprüfen ob alle pfade einen wert zurückgeben
-        if (!anweisung_analysieren(deklaration->rumpf(), funktion->rückgabe()) && rückgabe != global_datentyp_nihil)
+        auto erg = anweisung_analysieren(deklaration->rumpf(), funktion->rückgabe());
+        if (!erg && rückgabe != global_datentyp_nihil)
         {
             panik(symbol, std::format("nicht alle codepfade geben einen wert zurück."));
         }
@@ -1062,7 +1063,7 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
     {
         case Ast_Knoten::ANWEISUNG_AUSDRUCK:
         {
-            erg = ausdruck_analysieren(anweisung->als<Anweisung_Ausdruck *>()->ausdruck()) || erg;
+            ausdruck_analysieren(anweisung->als<Anweisung_Ausdruck *>()->ausdruck());
         } break;
 
         case Ast_Knoten::ANWEISUNG_BLOCK:
@@ -1100,7 +1101,7 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
                 }
 
                 ausdruck_analysieren(für->bedingung());
-                erg = anweisung_analysieren(für->rumpf()) || erg;
+                erg = anweisung_analysieren(für->rumpf());
             zone_verlassen();
         } break;
 
@@ -1136,12 +1137,12 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
             }
 
             zone_betreten();
-                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->rumpf()) || erg;
+                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->rumpf());
             zone_verlassen();
 
             if (anweisung->als<Anweisung_Wenn *>()->sonst())
             {
-                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->sonst()) || erg;
+                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->sonst()) && erg;
             }
         } break;
 
@@ -1156,7 +1157,7 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
                 zone_betreten(new Zone("muster", aktive_zone()));
 
                 muster_analysieren(muster->muster(), ausdruck_op->datentyp());
-                erg = anweisung_analysieren(muster->anweisung()) || erg;
+                erg = anweisung_analysieren(muster->anweisung()) && erg;
 
                 zone_verlassen();
             }
