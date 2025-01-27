@@ -14,7 +14,7 @@ namespace Sss::Kmp {
 
 const char * SCHLÜSSELWORT_SCHABLONE = "schablone";  // INFO: struct
 const char * SCHLÜSSELWORT_MERKMAL   = "merkmal";    // INFO: trait
-const char * SCHLÜSSELWORT_OPT       = "opt";        // INFO: enum
+const char * SCHLÜSSELWORT_OPTION    = "option";     // INFO: enum
 const char * SCHLÜSSELWORT_WEICHE    = "weiche";     // INFO: match
 const char * SCHLÜSSELWORT_WENN      = "wenn";       // INFO: if
 const char * SCHLÜSSELWORT_FÜR       = "für";        // INFO: for
@@ -634,7 +634,7 @@ Syntax::deklaration_einlesen(bool mit_abschluss)
             );
         }
 
-        else if (ist(Glied::BEZEICHNER) && strcmp(token()->text(), SCHLÜSSELWORT_OPT) == 0)
+        else if (ist(Glied::BEZEICHNER) && strcmp(token()->text(), SCHLÜSSELWORT_OPTION) == 0)
         {
             auto *schlüsselwort = weiter();
 
@@ -681,7 +681,7 @@ Syntax::deklaration_einlesen(bool mit_abschluss)
 
             auto *klammer_zu = erwarte(Glied::GKLAMMER_ZU);
 
-            return new Deklaration_Opt(
+            return new Deklaration_Option(
                 Spanne(anfang->spanne().von(), klammer_zu->spanne().bis()),
                 namen[0],
                 eigenschaften

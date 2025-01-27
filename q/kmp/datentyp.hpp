@@ -6,9 +6,9 @@
 namespace Sss::Kmp {
 
 #define Datentyp_Status_Liste \
-    X(UNBEARBEITET,       1, "Unbearbeitet") \
-    X(IN_BEARBEITUNG,     2, "In Bearbeitung") \
-    X(BEARBEITET,         3, "Bearbeitet")
+    X(UNBEHANDELT,       1, "Unbehandelt") \
+    X(IN_BEHANDLUNG,     2, "In Behandlung") \
+    X(BEHANDELT,         3, "Behandelt")
 
 #define Datentyp_Art_Liste \
     X(GANZE_ZAHL,         1, "Ganze Zahl") \
@@ -20,9 +20,8 @@ namespace Sss::Kmp {
     X(BOOL,               7, "Wahrheitswert") \
     X(AUFZÄHLUNG,         8, "Aufzählung") \
     X(FELD,               9, "Feld") \
-    X(NICHTS,            10, "Nichts") \
-    X(OPT,               11, "Opt") \
-    X(ANON,              12, "Anon")
+    X(NIHIL,             10, "Nihil") \
+    X(OPTION,            11, "Option") \
 
 #define Kompatibilität_Liste \
     X(INKOMPATIBEL,         0, "Inkompatibel") \
@@ -30,19 +29,10 @@ namespace Sss::Kmp {
     X(KOMPATIBEL_IMPLIZIT,  2, "Implizit") \
     X(KOMPATIBEL_MIT_DATENVERLUST, 3, "Kompatibel mit Datenverlust") \
 
-#if 0
-    TYPE_VOID,
-    TYPE_CHAR,
-    TYPE_NAMESPACE,
-    TYPE_COMPOUND,
-    TYPE_VARIADIC,
-    TYPE_UNION,
-#endif
-
 class Ausdruck;
 class Deklaration;
 class Deklaration_Schablone;
-class Deklaration_Opt;
+class Deklaration_Option;
 class Operand;
 class Symbol;
 
@@ -201,7 +191,7 @@ private:
     Datentyp *_rückgabe;
 };
 
-class Datentyp_Opt : public Datentyp
+class Datentyp_Option : public Datentyp
 {
 public:
     class Eigenschaft
@@ -215,7 +205,7 @@ public:
         std::string _name;
     };
 
-    Datentyp_Opt(Datentyp *basis = nullptr);
+    Datentyp_Option(Datentyp *basis = nullptr);
 
     void eigenschaft_hinzufügen(Datentyp *datentyp, Operand *operand, std::string& name);
 

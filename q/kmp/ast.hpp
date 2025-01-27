@@ -30,7 +30,7 @@
     X(DEKLARATION_SCHABLONE,        31, "Deklaration Schablone") \
     X(DEKLARATION_FUNKTION,         32, "Deklaration Funktion") \
     X(DEKLARATION_BRAUCHE,          33, "Deklaration Brauche") \
-    X(DEKLARATION_OPT,              34, "Deklaration Opt") \
+    X(DEKLARATION_OPTION,           34, "Deklaration Option") \
     \
     X(ANWEISUNG_ZUWEISUNG,          40, "Anweisung Zuweisung") \
     X(ANWEISUNG_WENN,               41, "Anweisung Wenn") \
@@ -502,10 +502,10 @@ private:
     Ausdruck_Brauche *_ausdruck;
 };
 
-class Deklaration_Opt : public Deklaration
+class Deklaration_Option : public Deklaration
 {
 public:
-    Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften);
+    Deklaration_Option(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften);
 
     std::vector<Deklaration_Variable *> eigenschaften() const;
 

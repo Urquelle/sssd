@@ -22,7 +22,7 @@ Datentyp * global_datentyp_d32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4, true
 Datentyp * global_datentyp_d64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8, true);
 Datentyp * global_datentyp_text   = new Datentyp(Datentyp::TEXT, 8, true);
 Datentyp * global_datentyp_bool   = new Datentyp(Datentyp::GANZE_ZAHL, 4, true);
-Datentyp * global_datentyp_nichts = new Datentyp(Datentyp::NICHTS, 0, true);
+Datentyp * global_datentyp_nihil  = new Datentyp(Datentyp::NIHIL, 0, true);
 
 Semantik::Semantik(Ast ast, Zone *system, Zone *global)
     : _ast(ast)
@@ -124,6 +124,8 @@ Semantik::starten()
 void
 Semantik::importe_registrieren()
 {
+    // AUFGABE: zirkuläre importe verhindern
+
     for (auto *anweisung: _ast.anweisungen)
     {
         if (anweisung->art() == Ast_Knoten::ANWEISUNG_BRAUCHE)
@@ -244,9 +246,9 @@ Semantik::deklarationen_registrieren()
                     }
                 } break;
 
-                case Ast_Knoten::DEKLARATION_OPT:
+                case Ast_Knoten::DEKLARATION_OPTION:
                 {
-                    auto *datentyp = new Datentyp_Opt();
+                    auto *datentyp = new Datentyp_Option();
                     auto *symbol = new Symbol(
                         deklaration->spanne(),
                         Symbol::DATENTYP, Symbol::UNBEHANDELT,
@@ -314,9 +316,9 @@ Semantik::symbol_analysieren(Symbol *symbol, Deklaration *deklaration)
             funktion_analysieren(symbol, deklaration->als<Deklaration_Funktion *>());
         } break;
 
-        case Ast_Knoten::DEKLARATION_OPT:
+        case Ast_Knoten::DEKLARATION_OPTION:
         {
-            opt_analysieren(symbol, deklaration->als<Deklaration_Opt *>());
+            opt_analysieren(symbol, deklaration->als<Deklaration_Option *>());
         } break;
 
         case Ast_Knoten::DEKLARATION_SCHABLONE:
@@ -387,7 +389,7 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
         funktion->parameter_hinzufügen(datentyp);
     }
 
-    Datentyp *rückgabe = global_datentyp_nichts;
+    Datentyp *rückgabe = global_datentyp_nihil;
     if (deklaration->rückgabe())
     {
         rückgabe = spezifizierung_analysieren(deklaration->rückgabe());
@@ -402,15 +404,21 @@ Semantik::funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration
         z->über_setzen(aktive_zone());
 
         zone_betreten(symbol->zone());
-        anweisung_analysieren(deklaration->rumpf(), funktion->rückgabe());
+
+        // AUFGABE: überprüfen ob alle pfade einen wert zurückgeben
+        if (!anweisung_analysieren(deklaration->rumpf(), funktion->rückgabe()) && rückgabe != global_datentyp_nihil)
+        {
+            panik(symbol, std::format("nicht alle codepfade geben einen wert zurück."));
+        }
+
         zone_verlassen();
     }
 }
 
 void
-Semantik::opt_analysieren(Symbol *symbol, Deklaration_Opt *deklaration)
+Semantik::opt_analysieren(Symbol *symbol, Deklaration_Option *deklaration)
 {
-    auto *datentyp = symbol->datentyp()->als<Datentyp_Opt *>();
+    auto *datentyp = symbol->datentyp()->als<Datentyp_Option *>();
 
     auto *z = symbol->zone();
     z->über_setzen(aktive_zone());
@@ -447,18 +455,18 @@ Semantik::schablone_analysieren(Symbol *symbol, Deklaration_Schablone *schablone
 {
     auto *datentyp = symbol->datentyp()->als<Datentyp_Schablone *>();
 
-    if (datentyp->status() == Datentyp::BEARBEITET ||
-        datentyp->status() == Datentyp::IN_BEARBEITUNG && zirkularität_ignorieren)
+    if (datentyp->status() == Datentyp::BEHANDELT ||
+        datentyp->status() == Datentyp::IN_BEHANDLUNG && zirkularität_ignorieren)
     {
         return;
     }
 
-    if (datentyp->status() == Datentyp::IN_BEARBEITUNG)
+    if (datentyp->status() == Datentyp::IN_BEHANDLUNG)
     {
         panik(symbol, std::format("datentyp {} mit zirkulärer abhängigkeit.", symbol->name()));
     }
 
-    datentyp->status_setzen(Datentyp::IN_BEARBEITUNG);
+    datentyp->status_setzen(Datentyp::IN_BEHANDLUNG);
 
     assert(symbol != nullptr);
     assert(datentyp != nullptr);
@@ -489,7 +497,7 @@ Semantik::schablone_analysieren(Symbol *symbol, Deklaration_Schablone *schablone
     zone_verlassen();
 
     datentyp->größe_setzen(größe);
-    datentyp->status_setzen(Datentyp::BEARBEITET);
+    datentyp->status_setzen(Datentyp::BEHANDELT);
 }
 
 void
@@ -1045,21 +1053,23 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
     return nullptr;
 }
 
-void
+bool
 Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
 {
+    bool erg = false;
+
     switch (anweisung->art())
     {
         case Ast_Knoten::ANWEISUNG_AUSDRUCK:
         {
-            ausdruck_analysieren(anweisung->als<Anweisung_Ausdruck *>()->ausdruck());
+            erg = ausdruck_analysieren(anweisung->als<Anweisung_Ausdruck *>()->ausdruck()) || erg;
         } break;
 
         case Ast_Knoten::ANWEISUNG_BLOCK:
         {
             for (auto *a : anweisung->als<Anweisung_Block *>()->anweisungen())
             {
-                anweisung_analysieren(a, über);
+                erg = anweisung_analysieren(a, über) || erg;
             }
         } break;
 
@@ -1090,7 +1100,7 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
                 }
 
                 ausdruck_analysieren(für->bedingung());
-                anweisung_analysieren(für->rumpf());
+                erg = anweisung_analysieren(für->rumpf()) || erg;
             zone_verlassen();
         } break;
 
@@ -1109,6 +1119,8 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
             {
                 panik(anweisung, std::format("der datentyp der rückgabe {}, ist nicht mit dem deklarierten rückgabedatentyp {} kompatibel.", op->datentyp()->symbol()->name(), über->symbol()->name()));
             }
+
+            erg = true;
         } break;
 
         case Ast_Knoten::ANWEISUNG_WENN:
@@ -1124,12 +1136,12 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
             }
 
             zone_betreten();
-                anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->rumpf());
+                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->rumpf()) || erg;
             zone_verlassen();
 
             if (anweisung->als<Anweisung_Wenn *>()->sonst())
             {
-                anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->sonst());
+                erg = anweisung_analysieren(anweisung->als<Anweisung_Wenn *>()->sonst()) || erg;
             }
         } break;
 
@@ -1144,7 +1156,7 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
                 zone_betreten(new Zone("muster", aktive_zone()));
 
                 muster_analysieren(muster->muster(), ausdruck_op->datentyp());
-                anweisung_analysieren(muster->anweisung());
+                erg = anweisung_analysieren(muster->anweisung()) || erg;
 
                 zone_verlassen();
             }
@@ -1171,6 +1183,8 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
             assert(!"unbekannte anweisung");
         } break;
     }
+
+    return erg;
 }
 
 void

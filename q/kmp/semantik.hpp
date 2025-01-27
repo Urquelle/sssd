@@ -32,11 +32,11 @@ public:
     void symbol_analysieren(Symbol *symbol, Deklaration *deklaration);
     void variable_analysieren(Symbol *symbol, Deklaration_Variable *deklaration);
     void funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration);
-    void opt_analysieren(Symbol *symbol, Deklaration_Opt *deklaration);
+    void opt_analysieren(Symbol *symbol, Deklaration_Option *deklaration);
     void schablone_analysieren(Symbol *symbol, Deklaration_Schablone *deklaration, bool zirkularität_ignorieren = false);
     void muster_analysieren(Ausdruck *muster, Datentyp *datentyp);
 
-    void       anweisung_analysieren(Anweisung *anweisung, Datentyp *über = nullptr);
+    bool       anweisung_analysieren(Anweisung *anweisung, Datentyp *über = nullptr);
     Datentyp * deklaration_analysieren(Deklaration *deklaration);
     Datentyp * spezifizierung_analysieren(Spezifizierung *spezifizierung);
     Operand  * ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp = nullptr);

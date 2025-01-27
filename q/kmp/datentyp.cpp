@@ -81,7 +81,7 @@ Datentyp::datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit)
                 auto *quelle_basis = quelle->als<Datentyp_Zeiger*>()->basis();
 
                 // Nullzeiger erlauben
-                if (quelle_basis->art() == Datentyp::NICHTS)
+                if (quelle_basis->art() == Datentyp::NIHIL)
                 {
                     return Datentyp::KOMPATIBEL;
                 }
@@ -337,12 +337,6 @@ Datentyp_Funktion::rückgabe() const
     return _rückgabe;
 }
 
-Datentyp_Anon::Datentyp_Anon(std::vector<Datentyp_Anon::Eigenschaft *> eigenschaften)
-    : Datentyp(Datentyp::ANON, 8)
-    , _eigenschaften(std::move(eigenschaften))
-{
-}
-
 Datentyp_Anon::Eigenschaft::Eigenschaft(Datentyp *datentyp, size_t versatz, std::string name)
     : _datentyp(datentyp)
     , _versatz(versatz)
@@ -350,13 +344,13 @@ Datentyp_Anon::Eigenschaft::Eigenschaft(Datentyp *datentyp, size_t versatz, std:
 {
 }
 
-Datentyp_Opt::Datentyp_Opt(Datentyp *basis)
-    : Datentyp(Datentyp::OPT, 8)
+Datentyp_Option::Datentyp_Option(Datentyp *basis)
+    : Datentyp(Datentyp::OPTION, 8)
     , _basis(basis)
 {
 }
 
-Datentyp_Opt::Eigenschaft::Eigenschaft(Datentyp *datentyp, Operand *operand, std::string& name)
+Datentyp_Option::Eigenschaft::Eigenschaft(Datentyp *datentyp, Operand *operand, std::string& name)
     : _datentyp(datentyp)
     , _operand(operand)
     , _name(std::move(name))
@@ -364,9 +358,9 @@ Datentyp_Opt::Eigenschaft::Eigenschaft(Datentyp *datentyp, Operand *operand, std
 }
 
 void
-Datentyp_Opt::eigenschaft_hinzufügen(Datentyp *datentyp, Operand *operand, std::string& name)
+Datentyp_Option::eigenschaft_hinzufügen(Datentyp *datentyp, Operand *operand, std::string& name)
 {
-    Datentyp_Opt::Eigenschaft *eigenschaft = new Datentyp_Opt::Eigenschaft(datentyp, operand, name);
+    Datentyp_Option::Eigenschaft *eigenschaft = new Datentyp_Option::Eigenschaft(datentyp, operand, name);
 
     _eigenschaften.push_back(eigenschaft);
 }

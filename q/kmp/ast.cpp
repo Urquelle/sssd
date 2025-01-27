@@ -750,14 +750,14 @@ Deklaration_Brauche::name() const
     return erg;
 }
 
-Deklaration_Opt::Deklaration_Opt(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften)
-    : Deklaration(Ast_Knoten::DEKLARATION_OPT, spanne, name)
+Deklaration_Option::Deklaration_Option(Spanne spanne, std::string name, std::vector<Deklaration_Variable *> eigenschaften)
+    : Deklaration(Ast_Knoten::DEKLARATION_OPTION, spanne, name)
     , _eigenschaften(eigenschaften)
 {
 }
 
 std::vector<Deklaration_Variable *>
-Deklaration_Opt::eigenschaften() const
+Deklaration_Option::eigenschaften() const
 {
     return _eigenschaften;
 }
