@@ -20,6 +20,7 @@
     X(AUSDRUCK_REIHE,               11, "Ausdruck Reihe") \
     X(AUSDRUCK_BRAUCHE,             12, "Ausdruck Brauche") \
     X(AUSDRUCK_KOMPOSITUM,          13, "Ausdruck Kompositum") \
+    X(AUSDRUCK_AUSFÜHREN,           14, "Ausdruck Ausführen") \
     \
     X(SPEZIFIZIERUNG_BEZEICHNER,    20, "Spezifizierung Name") \
     X(SPEZIFIZIERUNG_FELD,          21, "Spezifizierung Feld") \
@@ -42,7 +43,7 @@
     X(ANWEISUNG_AUSDRUCK,           47, "Anweisung Ausdruck") \
     X(ANWEISUNG_DANACH,             48, "Anweisung Danach") \
     X(ANWEISUNG_WEICHE,             49, "Anweisung Weiche") \
-    X(ANWEISUNG_RES,                50, "Anweisung Res")
+    X(ANWEISUNG_RES,                50, "Anweisung Res") \
 
 namespace Sss::Kmp {
 
@@ -296,6 +297,19 @@ public:
 private:
     Ausdruck *_basis;
     std::vector<Ausdruck *> _argumente;
+};
+
+class Ausdruck_Ausführen : public Ausdruck
+{
+public:
+    Ausdruck_Ausführen(Spanne spanne, Ausdruck *ausdruck);
+
+    Ausdruck *ausdruck() const;
+
+    void ausgeben(int32_t tiefe, std::ostream &ausgabe) override;
+
+private:
+    Ausdruck *_ausdruck;
 };
 
 class Ausdruck_Reihe : public Ausdruck

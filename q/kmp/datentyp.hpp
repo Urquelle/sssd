@@ -60,9 +60,14 @@ public:
     #undef X
     };
 
+    enum Merkmale
+    {
+        ARITHMETISCH = 1
+    };
+
     static Kompatibilität datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit = true);
 
-    Datentyp(Art art, size_t größe, bool abgeschlossen = false);
+    Datentyp(Art art, size_t größe, bool abgeschlossen = false, uint32_t merkmale = 0);
 
     Art art() const;
     bool abgeschlossen() const;
@@ -79,6 +84,8 @@ public:
 
     Deklaration * deklaration() const;
     void deklaration_setzen(Deklaration *deklaration);
+
+    bool ist_arithmetisch() const;
 
     template<typename T> T als();
     virtual void ausgeben(int32_t tiefe, std::ostream &ausgabe);

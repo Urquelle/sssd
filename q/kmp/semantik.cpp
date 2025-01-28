@@ -13,16 +13,21 @@
 
 namespace Sss::Kmp {
 
-Datentyp * global_datentyp_g8     = new Datentyp(Datentyp::GANZE_ZAHL, 1, true);
-Datentyp * global_datentyp_g16    = new Datentyp(Datentyp::GANZE_ZAHL, 2, true);
-Datentyp * global_datentyp_g32    = new Datentyp(Datentyp::GANZE_ZAHL, 4, true);
-Datentyp * global_datentyp_g64    = new Datentyp(Datentyp::GANZE_ZAHL, 8, true);
-Datentyp * global_datentyp_g128   = new Datentyp(Datentyp::GANZE_ZAHL, 16, true);
-Datentyp * global_datentyp_d32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4, true);
-Datentyp * global_datentyp_d64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8, true);
-Datentyp * global_datentyp_text   = new Datentyp(Datentyp::TEXT, 8, true);
-Datentyp * global_datentyp_bool   = new Datentyp(Datentyp::GANZE_ZAHL, 4, true);
-Datentyp * global_datentyp_nihil  = new Datentyp(Datentyp::NIHIL, 0, true);
+Datentyp * global_datentyp_n8     = new Datentyp(Datentyp::GANZE_ZAHL,   1, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_n16    = new Datentyp(Datentyp::GANZE_ZAHL,   2, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_n32    = new Datentyp(Datentyp::GANZE_ZAHL,   4, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_n64    = new Datentyp(Datentyp::GANZE_ZAHL,   8, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_n128   = new Datentyp(Datentyp::GANZE_ZAHL,   16, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_g8     = new Datentyp(Datentyp::GANZE_ZAHL,   1, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_g16    = new Datentyp(Datentyp::GANZE_ZAHL,   2, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_g32    = new Datentyp(Datentyp::GANZE_ZAHL,   4, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_g64    = new Datentyp(Datentyp::GANZE_ZAHL,   8, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_g128   = new Datentyp(Datentyp::GANZE_ZAHL,   16, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_d32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_d64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8, true, Datentyp::ARITHMETISCH);
+Datentyp * global_datentyp_text   = new Datentyp(Datentyp::TEXT,         8, true);
+Datentyp * global_datentyp_bool   = new Datentyp(Datentyp::GANZE_ZAHL,   4, true);
+Datentyp * global_datentyp_nihil  = new Datentyp(Datentyp::NIHIL,        0, true);
 
 Semantik::Semantik(Ast ast, Zone *system, Zone *global)
     : _ast(ast)
@@ -545,7 +550,19 @@ Semantik::muster_analysieren(Ausdruck *muster, Datentyp *datentyp)
                                   std::format("bezeichner {} konnte nicht registriert werden.", kompositum_eigenschaft->name()));
                         }
 
+                        auto kompositum_eigenschaft_op = ausdruck_analysieren(kompositum_eigenschaft->ausdruck());
+
+                        if (Datentyp::datentypen_kompatibel(
+                            schablone_eigenschaft->datentyp(), kompositum_eigenschaft_op->datentyp()) == Datentyp::INKOMPATIBEL)
+                        {
+                            panik(kompositum_eigenschaft->spanne(), std::format(
+                                "datentyp des ausdrucks {} ist nicht kompatibel mit dem datentyp der eigenschaft {}",
+                                    kompositum_eigenschaft_op->datentyp()->symbol()->name(),
+                                    schablone_eigenschaft->datentyp()->symbol()->name()));
+                        }
+
                         eigenschaft_gefunden = true;
+
                         break;
                     }
                 }
@@ -762,7 +779,13 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
                 assert(!"meldung erstatten");
             }
 
-            auto *erg = new Operand(symbol);
+            auto merkmale = 0;
+            if (symbol->datentyp())
+            {
+                merkmale = symbol->datentyp()->ist_arithmetisch() ? Operand::ARITHMETISCH : 0;
+            }
+
+            auto *erg = new Operand(symbol, merkmale);
 
             return erg;
         } break;
@@ -1179,6 +1202,13 @@ Semantik::anweisung_analysieren(Anweisung *anweisung, Datentyp *über)
             }
         } break;
 
+        case Ast_Knoten::ANWEISUNG_DANACH:
+        {
+            auto *danach = anweisung->als<Anweisung_Danach *>();
+
+            anweisung_analysieren(danach->anweisung());
+        } break;
+
         default:
         {
             assert(!"unbekannte anweisung");
@@ -1254,23 +1284,29 @@ Semantik::operanden_kompatibel(Operand *ziel, Operand *quelle)
 void
 Semantik::system_zone_initialisieren(Zone *zone)
 {
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n8",   global_datentyp_g8));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n16",  global_datentyp_g16));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n32",  global_datentyp_g32));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n64",  global_datentyp_g64));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "n128", global_datentyp_g128));
+#define I(N) \
+    auto *sym_##N = new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, #N, global_datentyp_##N); \
+    global_datentyp_##N->symbol_setzen(sym_##N); \
+    zone->registrieren(sym_##N)
 
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g8",   global_datentyp_g8));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g16",  global_datentyp_g16));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g32",  global_datentyp_g32));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g64",  global_datentyp_g64));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "g128", global_datentyp_g128));
+    I(n8);
+    I(n16);
+    I(n32);
+    I(n64);
+    I(n128);
 
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "d32", global_datentyp_d32));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "d64", global_datentyp_d64));
+    I(g8);
+    I(g16);
+    I(g32);
+    I(g64);
+    I(g128);
 
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "text", global_datentyp_text));
-    zone->registrieren(new Symbol(Spanne(), Symbol::DATENTYP, Symbol::BEHANDELT, "bool", global_datentyp_bool));
+    I(d32);
+    I(d64);
+
+    I(text);
+    I(bool);
+#undef I
 }
 
 }

@@ -239,6 +239,22 @@ Syntax::anweisung_einlesen()
                 ausdruck.wert()->als<Ausdruck_Text *>()->wert()
             );
         }
+        else if (token(1)->art() == Glied::AUSRUFEZEICHEN)
+        {
+            auto ausdruck = basis_ausdruck_einlesen();
+
+            if (ausdruck.schlecht())
+            {
+                assert(!"meldung erstatten");
+            }
+
+            erwarte(Glied::PUNKT);
+
+            anweisung = new Anweisung_Ausdruck(
+                ausdruck.wert()->spanne(),
+                ausdruck.wert()
+            );
+        }
     }
 
     else
@@ -1014,6 +1030,24 @@ Syntax::basis_ausdruck_einlesen()
                 auto *erg = new Ausdruck_Brauche(
                     Spanne(raute->spanne().von(), dateiname.wert()->spanne().bis()),
                     dateiname.wert()->als<Ausdruck_Text *>()->wert()
+                );
+
+                return erg;
+            }
+            else if (token()->art() == Glied::AUSRUFEZEICHEN)
+            {
+                weiter();
+
+                auto ausdruck = ausdruck_einlesen();
+
+                if (ausdruck.schlecht())
+                {
+                    assert(!"meldung erstatten");
+                }
+
+                auto *erg = new Ausdruck_Ausführen(
+                    Spanne(raute->spanne().von(), ausdruck.wert()->spanne().bis()),
+                    ausdruck.wert()
                 );
 
                 return erg;

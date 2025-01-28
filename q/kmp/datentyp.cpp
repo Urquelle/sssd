@@ -57,7 +57,7 @@ Datentyp::datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit)
 
             if (quelle->art() == Datentyp::DEZIMAL_ZAHL && implizit)
             {
-                std::cout << "Bei einer Umwandlung einer Dezimalzahl in eine Ganzzahl gehen Daten verloren!";
+                std::cout << "Bei einer Umwandlung einer Dezimalzahl in eine Ganzzahl gehen Daten verloren!" << std::endl;
 
                 return Datentyp::KOMPATIBEL_MIT_DATENVERLUST;
             }
@@ -116,12 +116,13 @@ Datentyp::datentypen_kompatibel(Datentyp *ziel, Datentyp *quelle, bool implizit)
     return Datentyp::INKOMPATIBEL;
 }
 
-Datentyp::Datentyp(Datentyp::Art art, size_t größe, bool abgeschlossen)
+Datentyp::Datentyp(Datentyp::Art art, size_t größe, bool abgeschlossen, uint32_t merkmale)
     : _art(art)
     , _größe(größe)
     , _symbol(nullptr)
     , _deklaration(nullptr)
     , _abgeschlossen(abgeschlossen)
+    , _merkmale(merkmale)
 {
 }
 
@@ -165,6 +166,14 @@ void
 Datentyp::größe_setzen(size_t größe)
 {
     _größe = größe;
+}
+
+bool
+Datentyp::ist_arithmetisch() const
+{
+    auto erg = (_merkmale & Datentyp::ARITHMETISCH) == Datentyp::ARITHMETISCH;
+
+    return erg;
 }
 
 Symbol *

@@ -1,14 +1,14 @@
 #include "diagnostik.hpp"
 
 #include <iostream>
-#include <cstdio>
+#include <format>
 
 // Escape-Sequenzen für verschiedene Terminal-Typen
 #define ANSI_HYPERLINK_START "\x1b]8;;"
 #define ANSI_HYPERLINK_END "\x1b]8;;\a"
 #define ANSI_HYPERLINK_MID "\a"
 
-void datei_verknüpfung_ausgeben(const char* dateiname, int versatz);
+void datei_verknüpfung_ausgeben(const char* dateiname, int versatz, std::ostream& ausgabe);
 
 Diagnostik::Diagnostik()
 {
@@ -45,13 +45,13 @@ Diagnostik::meldungen()
 
 std::ostream& operator<<(std::ostream& ausgabe, const Diagnostik::Meldung& m)
 {
-    datei_verknüpfung_ausgeben(m.spanne.von().quelldatei().c_str(), m.spanne.von().versatz());
+    datei_verknüpfung_ausgeben(m.spanne.von().quelldatei().c_str(), m.spanne.von().versatz(), ausgabe);
     ausgabe << " fehler: " << m.fehler->text << std::endl;
 
     return ausgabe;
 }
 
-void datei_verknüpfung_ausgeben(const char* dateiname, int versatz)
+void datei_verknüpfung_ausgeben(const char* dateiname, int versatz, std::ostream& ausgabe)
 {
     char pfad[1024];
     _fullpath(pfad, dateiname, sizeof(pfad));
@@ -64,7 +64,7 @@ void datei_verknüpfung_ausgeben(const char* dateiname, int versatz)
 
     // Erstelle den file://-URL mit Byte-Offset
     // Format: file:///path/to/file#byte=N
-    printf("%sfile://%s#byte=%d%s%s%s\n",
+    ausgabe << std::format("%sfile://%s#byte=%d%s%s%s",
            ANSI_HYPERLINK_START,
            pfad,
            versatz,

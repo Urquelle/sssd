@@ -342,6 +342,26 @@ Ausdruck_Aufruf::ausgeben(int32_t tiefe, std::ostream &ausgabe)
     }
 }
 
+Ausdruck_Ausführen::Ausdruck_Ausführen(Spanne spanne, Ausdruck *ausdruck)
+    : Ausdruck(Ast_Knoten::AUSDRUCK_AUSFÜHREN, spanne)
+    , _ausdruck(ausdruck)
+{
+}
+
+Ausdruck *
+Ausdruck_Ausführen::ausdruck() const
+{
+    return _ausdruck;
+}
+
+void
+Ausdruck_Ausführen::ausgeben(int32_t tiefe, std::ostream &ausgabe)
+{
+    Ast_Knoten::ausgeben(tiefe, ausgabe);
+
+    _ausdruck->ausgeben(tiefe+1, ausgabe);
+}
+
 Ausdruck_Reihe::Ausdruck_Reihe(Spanne spanne, Ausdruck *min, Ausdruck *max)
     : Ausdruck(Ast_Knoten::AUSDRUCK_REIHE, spanne)
     , _min(min)

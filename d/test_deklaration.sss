@@ -11,7 +11,15 @@ abc1 | Vektor2.
 abc2 |= 12.
 abc3 | Vektor2 = { /x = 123,45 }.
 
+#! xyz2(10).
+
 xyz || (a| g32 = -314; b| d64; c| n32 = 15) -> g32.
+
+xyz2 || (a| g32) -> g32
+{
+    res a + 10.
+}
+
 zyx || (b| [10] Vektor2; c| *g32; yy| (z1| g32) -> g32) -> Vektor2
 {
     a |= 314.
@@ -20,15 +28,20 @@ zyx || (b| [10] Vektor2; c| *g32; yy| (z1| g32) -> g32) -> Vektor2
         /x = 10; /y = 15;
     }.
 
+    danach x1/x = 12.
+
     x2 |= {
         /x = 10; /y = 15;
     } <Vektor2>.
 
     xyz(a; 35,014; x1/x).
 
+    t |= »Ein Text wurde hier eingegeben«.
+    🎂 |= »Geburtsdatum ist 18.06«.
+
     ## mustervergleich
     weiche x2 {
-        { /x = 15 } => {
+        { /x = 11 } => {
             ## eigenschaftszugriff
             x1/x = 15.
         }
