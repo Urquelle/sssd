@@ -1124,7 +1124,7 @@ Semantik::ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp
             }
 
             std::vector<Bestimmter_Ausdruck *> argumente;
-            for (int i = 0; i < funktion->parameter().size(); ++i)
+            for (int i = 0; i < (int) funktion->parameter().size(); ++i)
             {
                 auto *parameter = funktion->parameter()[i];
                 auto *argument = aufruf->argumente()[i];
