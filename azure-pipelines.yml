@@ -17,3 +17,8 @@ steps:
         popd
       )
     workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathToPublish: '$(Build.BinariesDirectory)\sss.exe'
+    artifactName: 'sss'
