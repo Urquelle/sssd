@@ -11,16 +11,13 @@ steps:
     script: |
       for /f "tokens=*" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do (
         call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x86
-        set PN=sss
         set PP=$(System.DefaultWorkingDirectory)
-        set E=$(Build.BinariesDirectory)\e
-        set CC=cl
+        set E=$(Build.BinariesDirectory)
         set CCFLAGS=/Od /utf-8 /D_CRT_SECURE_NO_WARNINGS /std:c++latest -MTd -nologo -fp:fast -fp:except- -Gm- -GR- -EHa- -Zo -Oi -WX -W4 -wd4624 -wd4530 -wd4244 -wd4201 -wd4100 -wd4101 -wd4189 -wd4505 -wd4127 -wd4702 -wd4310 -FC -Z7 -I%PP%\q -I%PP%\t
         set LDFLAGS=-incremental:no -opt:ref
-        rmdir /Q /S %E%
         mkdir %E%
         pushd %E%
-        %CC% %CCFLAGS% %PP%\b\sss.cpp /Fesss.exe /link %LDFLAGS%
+        call cl.exe %CCFLAGS% %PP%\b\sss.cpp /Fesss.exe /link %LDFLAGS%
         popd
       )
     workingDirectory: '$(System.DefaultWorkingDirectory)'
