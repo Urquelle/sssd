@@ -6,15 +6,12 @@ pool:
 
 steps:
 - script: |
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
-  displayName: 'Setup MSVC Environment'
-
-# - script: |
-#    cl.exe /EHsc /W4 /WX *.cpp
-#  displayName: 'Compile C++ files'
-#  workingDirectory: '$(System.DefaultWorkingDirectory)'
+    call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+  displayName: 'MSVC Umgebung einrichten'
+  env:
+    ProgramFiles(x86): $(ProgramFiles(x86))
 
 - script: |
     call s/e.bat
-  displayName: 'Run s/e.bat'
+  displayName: 's/e.bat Ausführen'
   workingDirectory: '$(System.DefaultWorkingDirectory)'
