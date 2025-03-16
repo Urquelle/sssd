@@ -6,14 +6,12 @@ pool:
 
 steps:
 - task: CmdLine@2
-  displayName: 'MSVC Umgebung einrichten'
+  displayName: 'Erstellen'
   inputs:
     script: |
       for /f "tokens=*" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do (
         call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x86
+        cl.exe /EHsc /W4 /WX *.cpp
+        call "s\e.bat"
       )
-
-- script: |
-    call s/e.bat
-  displayName: 's/e.bat Ausführen'
-  workingDirectory: '$(System.DefaultWorkingDirectory)'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
