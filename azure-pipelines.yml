@@ -1,0 +1,20 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- script: |
+    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86
+  displayName: 'Setup MSVC Environment'
+
+# - script: |
+#    cl.exe /EHsc /W4 /WX *.cpp
+#  displayName: 'Compile C++ files'
+#  workingDirectory: '$(System.DefaultWorkingDirectory)'
+
+- script: |
+    call s/e.bat
+  displayName: 'Run s/e.bat'
+  workingDirectory: '$(System.DefaultWorkingDirectory)'
