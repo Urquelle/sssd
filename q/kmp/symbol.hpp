@@ -6,6 +6,7 @@
 
 namespace Sss::Kmp {
 
+class Bestimmte_Deklaration;
 class Datentyp;
 class Zone;
 
@@ -52,6 +53,9 @@ public:
     Datentyp *datentyp() const;
     void datentyp_setzen(Datentyp *datentyp);
 
+    void deklaration_setzen(Bestimmte_Deklaration *deklaration);
+    Bestimmte_Deklaration *deklaration() const;
+
 private:
     Art _art;
     Status _status;
@@ -59,6 +63,7 @@ private:
     Datentyp *_datentyp;
     Zone *_zone;
     Spanne _spanne;
+    Bestimmte_Deklaration *_deklaration;
 };
 
 }

@@ -77,4 +77,16 @@ Symbol::datentyp_setzen(Datentyp *datentyp)
     _datentyp = datentyp;
 }
 
+void
+Symbol::deklaration_setzen(Bestimmte_Deklaration *deklaration)
+{
+    _deklaration = deklaration;
+}
+
+Bestimmte_Deklaration *
+Symbol::deklaration() const
+{
+    return _deklaration;
+}
+
 }

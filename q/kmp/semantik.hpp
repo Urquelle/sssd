@@ -1,19 +1,22 @@
 #pragma once
 
-#include "ast.hpp"
-#include "diagnostik.hpp"
-#include "operand.hpp"
-#include "symbol.hpp"
-#include "zone.hpp"
+#include "kmp/asb.hpp"
+#include "kmp/diagnostik.hpp"
+#include "kmp/operand.hpp"
+#include "kmp/symbol.hpp"
+#include "kmp/zone.hpp"
+#include "kmp/bestimmter_asb.hpp"
 
 namespace Sss::Kmp {
 
 class Semantik
 {
 public:
-    Semantik(Ast ast, Zone *system = nullptr, Zone *global = nullptr);
+    Semantik(Asb ast, Zone *system = nullptr, Zone *global = nullptr);
 
-    Ast starten();
+    static void system_zone_initialisieren(Zone *zone);
+
+    Bestimmter_Asb * starten(bool mit_hauptmethode);
 
     Zone * aktive_zone() const;
     Zone * system() const;
@@ -23,27 +26,27 @@ public:
     bool registrieren(Symbol *symbol);
     bool ist_registriert(std::string name);
 
-    void system_zone_initialisieren(Zone *zone);
     void importe_registrieren();
     void deklarationen_registrieren();
-    void symbole_analysieren();
+    void symbole_analysieren(bool mit_hauptmethode);
     void datentyp_abschließen(Datentyp *datentyp, bool basis_eines_zeigers = false);
+    void globale_anweisungen_der_hauptmethode_zuordnen();
+    void anweisungen_reduzieren();
 
-    void symbol_analysieren(Symbol *symbol, Deklaration *deklaration);
-    void variable_analysieren(Symbol *symbol, Deklaration_Variable *deklaration);
-    void funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration);
-    void opt_analysieren(Symbol *symbol, Deklaration_Option *deklaration);
-    void schablone_analysieren(Symbol *symbol, Deklaration_Schablone *deklaration, bool zirkularität_ignorieren = false);
-    void muster_analysieren(Ausdruck *muster, Datentyp *datentyp);
+    Bestimmte_Deklaration * symbol_analysieren(Symbol *symbol, Deklaration *deklaration);
+    Bestimmte_Deklaration * variable_analysieren(Symbol *symbol, Deklaration_Variable *deklaration);
+    Bestimmte_Deklaration * funktion_analysieren(Symbol *symbol, Deklaration_Funktion *deklaration);
+    Bestimmte_Deklaration * option_analysieren(Symbol *symbol, Deklaration_Option *deklaration);
+    Bestimmte_Deklaration * schablone_analysieren(Symbol *symbol, Deklaration_Schablone *deklaration, bool zirkularität_ignorieren = false);
 
-    bool       anweisung_analysieren(Anweisung *anweisung, Datentyp *über = nullptr);
-    Datentyp * deklaration_analysieren(Deklaration *deklaration);
-    Datentyp * spezifizierung_analysieren(Spezifizierung *spezifizierung);
-    Operand  * ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp = nullptr);
-    Symbol   * bezeichner_analysieren(std::string bezeichner);
+    bool                    anweisung_analysieren(Anweisung *anweisung, Datentyp *über = nullptr, Bestimmte_Anweisung **bestimmte_anweisung = nullptr);
+    Bestimmte_Deklaration * deklaration_analysieren(Deklaration *deklaration);
+    Datentyp              * spezifizierung_analysieren(Spezifizierung *spezifizierung);
+    Bestimmter_Ausdruck   * ausdruck_analysieren(Ausdruck *ausdruck, Datentyp *erwarteter_datentyp = nullptr);
+    Symbol                * bezeichner_analysieren(std::string bezeichner);
+    Bestimmter_Ausdruck   * muster_analysieren(Ausdruck *muster, Datentyp *datentyp);
 
     void import_verarbeiten(std::string dateiname);
-
     bool operanden_kompatibel(Operand *ziel, Operand *quelle);
 
     void zone_betreten(Zone *zone = nullptr);
@@ -58,7 +61,12 @@ public:
 
     void melden(Spanne spanne, std::string text);
     void melden(Ausdruck *ausdruck, std::string text);
+    void melden(Anweisung *anweisung, std::string text);
     void melden(Spezifizierung *spezifizierung, std::string text);
+    void melden(Symbol *symbol, std::string text);
+    void melden(Deklaration *deklaration, std::string text);
+
+    Diagnostik diagnostik() const;
 
 private:
     Zone *_zone;
@@ -66,8 +74,10 @@ private:
     Zone *_global;
 
     Diagnostik _diagnostik;
-    Ast _ast;
+    Asb _asb;
+    Bestimmter_Asb *_bestimmter_asb;
 
+    Symbol *_hauptmethode;
     std::vector<Deklaration_Schablone *> _schablonen;
 };
 

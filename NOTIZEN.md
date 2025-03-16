@@ -68,3 +68,11 @@ nun steht mir das zeichen nicht mehr für die bit-oder und logisches-oder operat
     2b0101_1111_0000
     16bFF99_AA33
 
+
+# Funktionsdeklaration als Ausdruck umsetzen
+
+    aaa := (a: d32, ...) { ... }
+
+alles was nach = kommt soll als ausdruck gelesen werden können. Damit wäre es auch möglich eine funktion als lambda-argument zu übergeben.
+
+    aaa(10; (x: g32) { res x + 1. });

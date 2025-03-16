@@ -79,13 +79,13 @@ Cpu::schritt()
         panik(std::format("daten konnten nicht gelesen werden adr: {}", adr));
     }
 
-    auto instr = dekodieren(wert.value());
-    if (!instr.has_value())
+    auto anweisung = dekodieren(wert.value());
+    if (!anweisung.has_value())
     {
         panik(std::format("ungültige instruktion adr: {}", adr));
     }
 
-    instr.value()->ausführen(this);
+    anweisung.value()->ausführen(this);
 }
 
 std::optional<Vm::Anweisung *>

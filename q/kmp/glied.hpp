@@ -49,6 +49,7 @@
     X(ZUWEISUNG_STERN,   53, "Zuweisung Stern") \
     X(ZUWEISUNG_PISA,    54, "Zuweisung Pisa") \
     X(ZUWEISUNG_PROZENT, 55, "Zuweisung Prozent") \
+    X(ILLEGAL,           100, "Illegal")
 
 namespace Sss::Kmp {
 

@@ -1,2 +1,2 @@
 CompileFlags:
-    Add: ["-IC:\\Dev\\cpp\\sss\\q", "-std=c++20"]
+    Add: ["-IC:\\Dev\\cpp\\sss\\q", "-IC:\\Dev\\cpp\\sss\\t", "-Wno-switch", "-std=c++20"]

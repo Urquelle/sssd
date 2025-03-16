@@ -43,10 +43,17 @@ Diagnostik::meldungen()
     return _meldungen;
 }
 
+void
+Diagnostik::löschen()
+{
+    _meldungen.clear();
+}
+
 std::ostream& operator<<(std::ostream& ausgabe, const Diagnostik::Meldung& m)
 {
     datei_verknüpfung_ausgeben(m.spanne.von().quelldatei().c_str(), m.spanne.von().versatz(), ausgabe);
     ausgabe << " fehler: " << m.fehler->text << std::endl;
+    ausgabe << "\t" << m.spanne << std::endl;
 
     return ausgabe;
 }

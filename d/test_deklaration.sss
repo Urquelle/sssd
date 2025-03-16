@@ -1,3 +1,13 @@
+##(
+    INFO: anforderung soll eine Schnittstelle beschreiben, die für einen Datentypen implementiert
+          werden kann.
+
+Numerisch || anforderung {
+    operator»<« || (T )
+}
+
+##)
+
 Art || option {
     Eins.
     Zwei | text.
@@ -24,17 +34,29 @@ zyx || (b| [10] Vektor2; c| *g32; yy| (z1| g32) -> g32) -> Vektor2
 {
     a |= 314.
 
+    solange a > 0 {
+        a = a - 1.
+    }
+
     x1 | Vektor2 = {
         /x = 10; /y = 15;
     }.
 
-    danach x1/x = 12.
+    final x1/x = 12.
 
     x2 |= {
         /x = 10; /y = 15;
     } <Vektor2>.
 
     xyz(a; 35,014; x1/x).
+
+    ## INFO: zerlegungbeispiel mit einer bereits vorher definierten variablen _x,
+    ##       und einer neuen variablen _y
+
+    ##( zerlegung
+    _x |= 5.
+    (_x; _y| g32) = x1.
+    ##)
 
     t |= »Ein Text wurde hier eingegeben«.
     🎂 |= »Geburtsdatum ist 18.06«.

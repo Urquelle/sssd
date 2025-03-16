@@ -1,7 +1,9 @@
 #pragma once
 
-#include "datentyp.hpp"
-#include "symbol.hpp"
+#include "kmp/datentyp.hpp"
+#include "kmp/symbol.hpp"
+
+#include <variant>
 
 namespace Sss::Kmp {
 
@@ -19,26 +21,32 @@ public:
     #undef X
     };
 
+    typedef std::variant<int, float, bool, std::string> Wert;
+
     Operand(Datentyp *datentyp, uint32_t merkmale = 0);
     Operand(Symbol *symbol, uint32_t merkmale = 0);
 
-    Datentyp *datentyp() const;
+    Datentyp * datentyp() const;
 
-    Symbol *symbol() const;
-    void symbol_setzen(Symbol *symbol);
+    Symbol   * symbol() const;
+    void       symbol_setzen(Symbol *symbol);
 
-    uint32_t merkmale() const;
-    void merkmale_setzen(uint32_t merkmale);
-    bool merkmal_gesetzt(Merkmal merkmal) const;
-    void merkmal_setzen(Merkmal merkmal);
-    void merkmal_löschen(Merkmal merkmal);
+    uint32_t   merkmale() const;
+    void       merkmale_setzen(uint32_t merkmale);
+    bool       merkmal_gesetzt(Merkmal merkmal) const;
+    void       merkmal_setzen(Merkmal merkmal);
+    void       merkmal_löschen(Merkmal merkmal);
 
-    bool ist_arithmetisch() const;
+    void       wert_setzen(Wert *wert);
+    Wert     * wert() const;
+
+    bool       ist_arithmetisch() const;
 
 private:
     Datentyp *_datentyp;
     Symbol *_symbol;
     uint32_t _merkmale;
+    Wert *_wert;
 };
 
 }

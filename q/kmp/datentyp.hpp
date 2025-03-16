@@ -100,6 +100,24 @@ protected:
     bool _abgeschlossen { false };
 };
 
+namespace System {
+static Datentyp * N8     = new Datentyp(Datentyp::GANZE_ZAHL,   1,  true, Datentyp::ARITHMETISCH);
+static Datentyp * N16    = new Datentyp(Datentyp::GANZE_ZAHL,   2,  true, Datentyp::ARITHMETISCH);
+static Datentyp * N32    = new Datentyp(Datentyp::GANZE_ZAHL,   4,  true, Datentyp::ARITHMETISCH);
+static Datentyp * N64    = new Datentyp(Datentyp::GANZE_ZAHL,   8,  true, Datentyp::ARITHMETISCH);
+static Datentyp * N128   = new Datentyp(Datentyp::GANZE_ZAHL,   16, true, Datentyp::ARITHMETISCH);
+static Datentyp * G8     = new Datentyp(Datentyp::GANZE_ZAHL,   1,  true, Datentyp::ARITHMETISCH);
+static Datentyp * G16    = new Datentyp(Datentyp::GANZE_ZAHL,   2,  true, Datentyp::ARITHMETISCH);
+static Datentyp * G32    = new Datentyp(Datentyp::GANZE_ZAHL,   4,  true, Datentyp::ARITHMETISCH);
+static Datentyp * G64    = new Datentyp(Datentyp::GANZE_ZAHL,   8,  true, Datentyp::ARITHMETISCH);
+static Datentyp * G128   = new Datentyp(Datentyp::GANZE_ZAHL,   16, true, Datentyp::ARITHMETISCH);
+static Datentyp * D32    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 4,  true, Datentyp::ARITHMETISCH);
+static Datentyp * D64    = new Datentyp(Datentyp::DEZIMAL_ZAHL, 8,  true, Datentyp::ARITHMETISCH);
+static Datentyp * Text   = new Datentyp(Datentyp::TEXT,         8,  true);
+static Datentyp * Bool   = new Datentyp(Datentyp::GANZE_ZAHL,   4,  true);
+static Datentyp * Nihil  = new Datentyp(Datentyp::NIHIL,        0,  true);
+};
+
 class Datentyp_Feld : public Datentyp
 {
 public:

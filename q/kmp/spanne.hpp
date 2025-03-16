@@ -24,3 +24,5 @@ private:
     Zeichen _bis;
     uint32_t _länge;
 };
+
+std::ostream& operator<<(std::ostream& ausgabe, const Spanne& m);

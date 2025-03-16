@@ -20,6 +20,7 @@ public:
     void melden(Meldung meldung);
     void melden(Spanne spanne, Fehler *fehler);
     std::vector<Meldung> meldungen();
+    void löschen();
 
 private:
     std::vector<Meldung> _meldungen;

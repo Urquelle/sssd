@@ -200,35 +200,48 @@ Lexer::starten(int32_t position)
                 z = weiter();
 
                 int rekursion = 1;
-wiederholung:
 
-                if ( z.codepoint() == '(' )
+                if (z.codepoint() == '(')
                 {
                     z = weiter();
 
+wiederholung:
                     while (rekursion)
                     {
-                        while (z.codepoint() != '#' || zeichen(1).codepoint() != '#' || zeichen(2).codepoint() != ')')
+                        // Prüfen auf Dateiende
+                        if (z.codepoint() == '\0')
                         {
-                            z = weiter();
-
-                            if (z.codepoint() == '#' && zeichen(1).codepoint() == '#' && zeichen(2).codepoint() == '(')
-                            {
-                                z = weiter(2);
-
-                                rekursion++;
-                                goto wiederholung;
-                            }
+                            // Kommentar wurde nicht geschlossen - hier könnte ein Fehler ausgegeben werden
+                            break;
                         }
 
-                        rekursion--;
-
-                        z = weiter(3);
+                        // Prüfen, ob der Kommentar ordnungsgemäß geschlossen wird
+                        if (z.codepoint() == '#' &&
+                            zeichen(1).codepoint() == '#' &&
+                            zeichen(2).codepoint() == ')')
+                        {
+                            z = weiter(3);
+                            rekursion--;
+                        }
+                        // Prüfen auf verschachtelte Kommentare
+                        else if (z.codepoint() == '#' &&
+                                 zeichen(1).codepoint() == '#' &&
+                                 zeichen(2).codepoint() == '(')
+                        {
+                            z = weiter(3);
+                            rekursion++;
+                            goto wiederholung;
+                        }
+                        else
+                        {
+                            z = weiter();
+                        }
                     }
                 }
                 else
                 {
-                    while (z.codepoint() != '\n' && z.codepoint() != '\r')
+                    // Einzeiliger Kommentar
+                    while (z.codepoint() != '\0' && z.codepoint() != '\n' && z.codepoint() != '\r')
                     {
                         z = weiter();
                     }
@@ -354,10 +367,15 @@ wiederholung:
             erg.push_back(Glied::Text(Spanne(anfang, zeichen(-3))));
         }
 
-        // INFO: name
+        // INFO: bezeichner
         else if (z.ist_letter() || z.ist_emoji() || z.codepoint() == '_')
         {
-            while (z.ist_letter() || z.ist_emoji() || z.ist_ziffer() || z.codepoint() == '_')
+            while (z.ist_letter() ||
+                   z.ist_emoji()  ||
+                   z.ist_ziffer() ||
+                   z.ist_zwj()    ||
+                   z.ist_kombo()  ||
+                   z.codepoint() == '_')
             {
                 z = weiter();
             }
@@ -369,6 +387,7 @@ wiederholung:
         else if (z.ist_ziffer())
         {
             uint32_t wert = 0;
+            auto ende = z;
 
             while (z.ist_ziffer())
             {
@@ -381,43 +400,59 @@ wiederholung:
                 wert *= 10;
                 wert += ziffern[z.codepoint()];
 
+                ende = z;
                 z = weiter();
             }
 
             if (z.codepoint() == 'b')
             {
                 z = weiter();
+                ende = z;
                 uint32_t basis = wert;
                 wert = 0;
 
                 while (std::isalnum(z.codepoint()) || z.codepoint() == '_')
                 {
-                    if (z.codepoint() == '_')
-                    {
-                        z = weiter();
-                        continue;
-                    }
+                    char aktuelles_zeichen = z.codepoint();
+                    uint32_t ziffer_wert;
 
-                    if (z.codepoint() >= '0' && z.codepoint() <= '9' ||
-                        z.codepoint() >= 'a' && z.codepoint() <= 'f' ||
-                        z.codepoint() >= 'A' && z.codepoint() <= 'F')
+                    if (aktuelles_zeichen >= '0' && aktuelles_zeichen <= '9')
                     {
-                        wert *= basis;
-                        wert += ziffern[z.codepoint()];
-                        z = weiter();
+                        ziffer_wert = ziffern[aktuelles_zeichen];
+                    }
+                    else if (aktuelles_zeichen >= 'a' && aktuelles_zeichen <= 'f')
+                    {
+                        ziffer_wert = ziffern[aktuelles_zeichen];
+                    }
+                    else if (aktuelles_zeichen >= 'A' && aktuelles_zeichen <= 'F')
+                    {
+                        ziffer_wert = ziffern[aktuelles_zeichen];
                     }
                     else
                     {
                         break;
                     }
+
+                    if (ziffer_wert >= basis)
+                    {
+                        break;
+                    }
+
+                    ende = z;
+                    wert *= basis;
+                    wert += ziffer_wert;
+                    z = weiter();
                 }
 
-                erg.push_back(Glied::Ganzzahl(Spanne(anfang, z), wert, basis));
+                auto spanne = Spanne(anfang, ende);
+
+                erg.push_back(Glied::Ganzzahl(spanne, wert, basis));
             }
             else if (z.codepoint() == ',')
             {
                 weiter();
                 z = zeichen();
+                ende = z;
 
                 float dezimalwert = wert;
                 int32_t faktor = 10;
@@ -431,15 +466,21 @@ wiederholung:
                     dezimalwert += ((float) ziffern[z.codepoint()] / faktor);
                     faktor *= 10;
 
+                    ende = z;
                     z = weiter();
                 }
 
-                erg.push_back(Glied::Dezimalzahl(Spanne(anfang, z), dezimalwert));
+                erg.push_back(Glied::Dezimalzahl(Spanne(anfang, ende), dezimalwert));
             }
             else
             {
-                erg.push_back(Glied::Ganzzahl(Spanne(anfang, z), wert));
+                erg.push_back(Glied::Ganzzahl(Spanne(anfang, ende), wert));
             }
+        }
+        else
+        {
+            weiter();
+            erg.push_back(new Glied(Glied::ILLEGAL, Spanne(anfang, z)));
         }
     }
 

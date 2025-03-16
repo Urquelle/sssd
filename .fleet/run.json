@@ -1,0 +1,9 @@
+{
+    "configurations": [
+        {
+            "type": "command",
+            "name": "Erstellen",
+            "program": "C:\\Dev\\sss\\s\\e.bat"
+        }
+    ]
+}

@@ -6,16 +6,16 @@
 #include "ergebnis.hpp"
 #include "diagnostik.hpp"
 #include "glied.hpp"
-#include "ast.hpp"
+#include "asb.hpp"
 
 namespace Sss::Kmp {
 
 class Syntax
 {
 public:
-    Syntax(std::vector<Glied *> token);
+    Syntax(std::vector<Glied *> glieder);
 
-    Ast starten(int32_t index = 0);
+    Asb starten(int32_t index = 0);
 
     Ergebnis<Ausdruck *> ausdruck_einlesen();
     Ergebnis<Ausdruck *> reihe_ausdruck_einlesen();
@@ -36,18 +36,24 @@ public:
     Anweisung * block_anweisung_einlesen();
     Anweisung * wenn_anweisung_einlesen();
     Anweisung * für_anweisung_einlesen();
+    Anweisung * solange_anweisung_einlesen();
     Anweisung * weiche_anweisung_einlesen();
     Anweisung * deklaration_anweisung_einlesen();
-    Anweisung * danach_anweisung_einlesen();
+    Anweisung * final_anweisung_einlesen();
     Anweisung * res_anweisung_einlesen();
+    Anweisung * weiter_anweisung_einlesen();
+    Anweisung * sprung_anweisung_einlesen();
+    Anweisung * raus_anweisung_einlesen();
+    Anweisung * markierung_anweisung_einlesen();
 
     std::vector<Marke *> marken_einlesen();
 
-    Glied * token(int32_t versatz = 0) const;
+    Glied * glied(int32_t versatz = 0) const;
     Glied * weiter(int32_t anzahl = 1);
     Glied * erwarte(Glied::Art art);
     bool    passt(Glied::Art art);
     bool    ist(Glied::Art art, int32_t versatz = 0);
+    bool    dateiende();
 
     Diagnostik diagnostik() const;
     void melden(Spanne spanne, Fehler *fehler);
@@ -57,8 +63,8 @@ public:
 
 private:
     Diagnostik _diagnostik;
-    std::vector<Glied *> _token;
-    int32_t _token_index;
+    std::vector<Glied *> _glieder;
+    int32_t _glied_index;
 };
 
 }

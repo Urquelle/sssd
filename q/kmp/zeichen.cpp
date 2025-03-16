@@ -165,14 +165,34 @@ Zeichen::ist_emoji() const
 {
     if ((_codepoint >= 0x1F600 && _codepoint <= 0x1F64F) || // Emoticons
         (_codepoint >= 0x1F300 && _codepoint <= 0x1F5FF) || // Verschiedene Symbole
-        (_codepoint >= 0x1F900 && _codepoint <= 0x1F9FF) || // Zusätzliche Symbole und Piktogramme
+        (_codepoint >= 0x1F900 && _codepoint <= 0x1F9FF) || // Zusätzliche Symbole
         (_codepoint >= 0x1F680 && _codepoint <= 0x1F6C5) ||
-        (_codepoint >= 0x1FA70 && _codepoint <= 0x1FAFF))   // Erweitertes Piktogramm-Bereich-Symbole
+        (_codepoint >= 0x1FA70 && _codepoint <= 0x1FAFF) || // Erweitertes Piktogramm
+        (_codepoint >= 0x2600  && _codepoint <= 0x26FF)  || // Verschiedene Symbole
+        (_codepoint >= 0x2700  && _codepoint <= 0x27BF))    // Dingbats
     {
         return true;
     }
 
     return false;
+}
+
+bool
+Zeichen::ist_zwj() const
+{
+    auto erg = _codepoint == 0x200D;
+
+    return erg;
+}
+
+bool
+Zeichen::ist_kombo() const
+{
+    auto erg = (_codepoint >= 0x0300 && _codepoint <= 0x036F) ||
+               (_codepoint == 0x200D) ||
+               (_codepoint >= 0xFE00 && _codepoint <= 0xFE0F);
+
+    return erg;
 }
 
 uint8_t

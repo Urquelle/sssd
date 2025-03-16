@@ -18,6 +18,8 @@ public:
     bool ist_letter() const;
     bool ist_emoji() const;
     bool ist_ziffer() const;
+    bool ist_zwj() const;
+    bool ist_kombo() const;
     uint8_t byte_länge() const;
     uint32_t versatz() const;
     std::string quelldatei() const;
