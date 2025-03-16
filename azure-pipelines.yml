@@ -5,11 +5,13 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-- script: |
-    call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86
+- task: CmdLine@2
   displayName: 'MSVC Umgebung einrichten'
-  env:
-    ProgramFiles(x86): $(ProgramFiles(x86))
+  inputs:
+    script: |
+      for /f "tokens=*" %%i in ('"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do (
+        call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x86
+      )
 
 - script: |
     call s/e.bat
