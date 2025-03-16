@@ -1,6 +1,7 @@
 #include "kmp/interpret.hpp"
 
 #include "vm/anweisung.hpp"
+#include "vm/operand.hpp"
 
 namespace Sss::Kmp
 {
@@ -38,7 +39,8 @@ Interpret::anweisung_kodieren(Bestimmte_Anweisung *anweisung)
 
         case Asb_Knoten::ANWEISUNG_SPRUNG:
         {
-            auto a = Vm::Anweisung_Jmp(anweisung->als<Bestimmte_Anweisung_Sprung *>()->markierung());
+            auto adresse = _markierungen[anweisung->als<Bestimmte_Anweisung_Sprung *>()->markierung()];
+            auto a = Vm::Anweisung_Jmp(new Vm::Operand_Adr(adresse));
             a.kodieren(_speicher, {}, _adresse);
         } break;
     }

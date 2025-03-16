@@ -104,7 +104,7 @@ Anweisung::wert(Cpu *cpu, Operand *op)
     return erg;
 }
 
-auto
+size_t
 Anweisung::größe() const
 {
     return _größe;
@@ -180,7 +180,7 @@ Anweisung_Add::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, ui
             auto reg = operanden[0]->als<Operand_Reg *>();
             auto lit = operanden[1]->als<Operand_Imm *>();
 
-            IF_SCHREIBE1(laufwerk, adr, OP_SUB_REG_LIT);
+            IF_SCHREIBE1(laufwerk, adr, OP_SUB_REG_IMM);
             IF_SCHREIBE1(laufwerk, adr, (uint8_t) reg->wert());
             IF_SCHREIBE2(laufwerk, adr, lit->wert());
         }
@@ -192,7 +192,7 @@ Anweisung_Add::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, ui
             auto lit = operanden[0]->als<Operand_Imm *>();
             auto reg = operanden[1]->als<Operand_Reg *>();
 
-            IF_SCHREIBE1(laufwerk, adr, OP_SUB_LIT_REG);
+            IF_SCHREIBE1(laufwerk, adr, OP_SUB_IMM_REG);
             IF_SCHREIBE2(laufwerk, adr, lit->wert());
             IF_SCHREIBE1(laufwerk, adr, (uint8_t) reg->wert());
         }
@@ -252,7 +252,7 @@ Anweisung_Sub::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, ui
             auto reg = operanden[0]->als<Operand_Reg *>();
             auto imm = operanden[1]->als<Operand_Imm *>();
 
-            IF_SCHREIBE1(laufwerk, adr, OP_SUB_REG_LIT);
+            IF_SCHREIBE1(laufwerk, adr, OP_SUB_REG_IMM);
             IF_SCHREIBE1(laufwerk, adr, (uint8_t) reg->wert());
             IF_SCHREIBE2(laufwerk, adr, imm->wert());
         }
@@ -264,7 +264,7 @@ Anweisung_Sub::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, ui
             auto imm = operanden[0]->als<Operand_Imm *>();
             auto reg = operanden[1]->als<Operand_Reg *>();
 
-            IF_SCHREIBE1(laufwerk, adr, OP_SUB_LIT_REG);
+            IF_SCHREIBE1(laufwerk, adr, OP_SUB_IMM_REG);
             IF_SCHREIBE2(laufwerk, adr, imm->wert());
             IF_SCHREIBE1(laufwerk, adr, (uint8_t) reg->wert());
         }
@@ -298,35 +298,39 @@ Anweisung_Mul::ausführen(Cpu *cpu)
     schalter_setzen(cpu, Register::SCHLT);
 }
 
-Anweisung_Div::Anweisung_Div(Operand *links, Operand *rechts)
-    : Anweisung({ links, rechts })
+uint8_t
+Anweisung_Mul::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, uint16_t adresse)
 {
-}
+    uint16_t adr = adresse;
 
-void
-Anweisung_Div::ausführen(Cpu *cpu)
-{
-    auto links = operand(0);
-    auto rechts = operand(1);
-
-    if (!links.has_value() || !rechts.has_value())
+    if (operanden.size() < 2)
     {
-        return;
+        return 0;
     }
 
-    uint16_t wert_links = wert(cpu, links.value());
-    uint16_t wert_rechts = wert(cpu, rechts.value());
-
-    if (wert_rechts == 0)
+    if (operanden[0]->art() == Operand::Art::Reg)
     {
-        cpu->panik("division durch 0");
+        if (operanden[1]->art() == Operand::Art::Reg)
+        {
+            auto reg1 = operanden[0]->als<Operand_Reg *>();
+            auto reg2 = operanden[1]->als<Operand_Reg *>();
+
+            IF_SCHREIBE1(laufwerk, adr, OP_MUL_REG_REG);
+            IF_SCHREIBE1(laufwerk, adr, (uint16_t) reg1->wert());
+            IF_SCHREIBE1(laufwerk, adr, (uint16_t) reg2->wert());
+        }
+        else if (operanden[1]->art() == Operand::Art::Imm)
+        {
+            auto reg = operanden[0]->als<Operand_Reg *>();
+            auto imm = operanden[1]->als<Operand_Imm *>();
+
+            IF_SCHREIBE1(laufwerk, adr, OP_MUL_REG_IMM);
+            IF_SCHREIBE1(laufwerk, adr, (uint16_t) reg->wert());
+            IF_SCHREIBE2(laufwerk, adr, imm->wert());
+        }
     }
 
-    uint16_t wert = wert_links / wert_rechts;
-
-    cpu->reg(Register::ACU, wert);
-
-    schalter_setzen(cpu, Register::SCHLT);
+    return (uint8_t) größe();
 }
 
 Anweisung_Mov::Anweisung_Mov(Operand *ziel, Operand *quelle)
@@ -373,6 +377,70 @@ Anweisung_Mov::ausführen(Cpu *cpu)
     }
 }
 
+uint8_t
+Anweisung_Mov::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, uint16_t adresse)
+{
+    auto adr = adresse;
+
+    if (operanden.size() < 1)
+    {
+        return 0;
+    }
+
+    if (operanden[0]->art() == Operand::Art::Reg)
+    {
+        if (operanden[1]->art() == Operand::Art::Reg)
+        {
+            IF_SCHREIBE1(laufwerk, adr, OP_MOV_REG_REG);
+            IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[0]->als<Operand_Reg *>()->wert());
+            IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[1]->als<Operand_Reg *>()->wert());
+        }
+        else if (operanden[1]->art() == Operand::Art::Imm)
+        {
+            if (operanden.size() < 3)
+            {
+                IF_SCHREIBE1(laufwerk, adr, OP_MOV_REG_IMM);
+                IF_SCHREIBE1(laufwerk, adr, (uint8_t)  operanden[0]->als<Operand_Reg *>()->wert());
+                IF_SCHREIBE2(laufwerk, adr, operanden[1]->als<Operand_Imm *>()->wert());
+            }
+            else
+            {
+                IF_SCHREIBE1(laufwerk, adr, OP_MOV_REG_IMM_VER_REG);
+                IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[0]->als<Operand_Reg *>()->wert());
+                IF_SCHREIBE2(laufwerk, adr, operanden[1]->als<Operand_Imm *>()->wert());
+                IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[2]->als<Operand_Reg *>()->wert());
+            }
+        }
+        else if (operanden[1]->art() == Operand::Art::Adr)
+        {
+            IF_SCHREIBE1(laufwerk, adr, OP_MOV_REG_ADR);
+            IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[0]->als<Operand_Reg *>()->wert());
+            IF_SCHREIBE2(laufwerk, adr, operanden[1]->als<Operand_Adr *>()->wert());
+        }
+    }
+    else if (operanden[0]->art() == Operand::Art::Adr)
+    {
+        if (operanden[1]->art() == Operand::Art::Reg)
+        {
+            IF_SCHREIBE1(laufwerk, adr, OP_MOV_ADR_REG);
+            IF_SCHREIBE2(laufwerk, adr, operanden[0]->als<Operand_Adr *>()->wert());
+            IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[1]->als<Operand_Reg *>()->wert());
+        }
+        else if (operanden[1]->art() == Operand::Art::Imm)
+        {
+            IF_SCHREIBE1(laufwerk, adr, OP_MOV_ADR_IMM);
+            IF_SCHREIBE2(laufwerk, adr, operanden[0]->als<Operand_Adr *>()->wert());
+            IF_SCHREIBE2(laufwerk, adr, operanden[1]->als<Operand_Imm *>()->wert());
+        }
+    }
+    else
+    {
+        return 0;
+    }
+
+    return (uint8_t) größe();
+}
+
 Anweisung_Push::Anweisung_Push(Operand *quelle)
     : Anweisung({ quelle })
 {
@@ -391,6 +459,34 @@ Anweisung_Push::ausführen(Cpu *cpu)
     uint16_t w = wert(cpu, quelle.value());
 
     cpu->push(w);
+}
+
+uint8_t
+Anweisung_Push::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, uint16_t adresse)
+{
+    if (operanden.size() < 1)
+    {
+        return 0;
+    }
+
+    auto adr = adresse;
+
+    if (operanden[0]->art() == Operand::Art::Imm)
+    {
+        IF_SCHREIBE1(laufwerk, adr, OP_PSH_IMM);
+        IF_SCHREIBE2(laufwerk, adr, operanden[0]->als<Operand_Imm *>()->wert());
+
+        return 3;
+    }
+    else if (operanden[0]->art() == Operand::Art::Reg)
+    {
+        IF_SCHREIBE1(laufwerk, adr, OP_PSH_REG);
+        IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[0]->als<Operand_Reg *>()->wert());
+
+        return 2;
+    }
+
+    return (uint8_t) größe();
 }
 
 Anweisung_Pop::Anweisung_Pop(Operand *ziel)
@@ -429,6 +525,61 @@ Anweisung_Pop::ausführen(Cpu *cpu)
     }
 
     cpu->push(w);
+}
+
+uint8_t
+Anweisung_Pop::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, uint16_t adresse)
+{
+    if (operanden.size() < 1)
+    {
+        return 0;
+    }
+
+    auto adr = adresse;
+
+    IF_SCHREIBE1(laufwerk, adr, OP_POP);
+    IF_SCHREIBE1(laufwerk, adr, (uint8_t) operanden[0]->als<Operand_Reg *>()->wert());
+
+    return (uint8_t) größe();
+}
+
+Anweisung_Jmp::Anweisung_Jmp(Operand *ziel)
+    : Anweisung({ ziel })
+{
+}
+
+void
+Anweisung_Jmp::ausführen(Cpu *cpu)
+{
+    //
+}
+
+uint8_t
+Anweisung_Jmp::kodieren(Laufwerk *laufwerk, std::vector<Operand *> operanden, uint16_t adresse)
+{
+    if (operanden.size() < 2)
+    {
+        return 0;
+    }
+
+    auto adr = adresse;
+
+    if (operanden[0]->art() == Operand::Art::Imm)
+    {
+        auto imm = operanden[0]->als<Operand_Imm *>();
+
+        /*IF_SCHREIBE1(laufwerk, adr, OP_JMP_IMM);*/
+        IF_SCHREIBE2(laufwerk, adr, imm->wert());
+    }
+    else if (operanden[0]->art() == Operand::Art::Reg)
+    {
+        auto reg = operanden[0]->als<Operand_Reg *>();
+
+        /*IF_SCHREIBE1(laufwerk, adr, OP_JMP_REG);*/
+        IF_SCHREIBE1(laufwerk, adr, (uint8_t) reg->wert());
+    }
+
+    return (uint8_t) größe();
 }
 
 }
