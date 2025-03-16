@@ -1524,7 +1524,7 @@ Syntax::glied(int32_t versatz) const
 {
     int32_t index = _glied_index + versatz;
 
-    if (_glieder.size() <= index)
+    if (_glieder.size() <= (size_t) index)
     {
         index = (int32_t) _glieder.size() - 1;
     }
