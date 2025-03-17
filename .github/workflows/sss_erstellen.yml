@@ -1,0 +1,33 @@
+name: Build sss.exe
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: MSVC Umgebung einrichten und sss.exe erstellen
+      shell: cmd
+      run: |
+        @echo off
+        for /f "tokens=*" %%i in ('"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath') do (
+          call "%%i\VC\Auxiliary\Build\vcvarsall.bat" x86
+          cd %GITHUB_WORKSPACE%
+          mkdir build
+          cd build
+          cl.exe /Od /utf-8 /D_CRT_SECURE_NO_WARNINGS /std:c++latest -MTd -nologo -fp:fast -fp:except- -Gm- -GR- -EHa- -Zo -Oi -WX -W4 -wd4624 -wd4530 -wd4244 -wd4201 -wd4100 -wd4101 -wd4189 -wd4505 -wd4127 -wd4702 -wd4310 -wd4018 -FC -Z7 -I%GITHUB_WORKSPACE%\q -I%GITHUB_WORKSPACE%\t %GITHUB_WORKSPACE%\b\sss.cpp /Fesss.exe /link -incremental:no -opt:ref
+        )
+
+    - name: sss.exe Erzeugnis hochladen
+      uses: actions/upload-artifact@v4
+      with:
+        name: sss
+        path: build\sss.exe
