@@ -23,7 +23,7 @@ jobs:
           cd %GITHUB_WORKSPACE%
           mkdir build
           cd build
-          cl.exe /Od /utf-8 /D_CRT_SECURE_NO_WARNINGS /std:c++latest -MTd -nologo -fp:fast -fp:except- -Gm- -GR- -EHa- -Zo -Oi -WX -W4 -wd4624 -wd4530 -wd4244 -wd4201 -wd4100 -wd4101 -wd4189 -wd4505 -wd4127 -wd4702 -wd4310 -wd4018 -FC -Z7 -I%GITHUB_WORKSPACE%\q -I%GITHUB_WORKSPACE%\t %GITHUB_WORKSPACE%\b\sss.cpp /Fesss.exe /link -incremental:no -opt:ref
+          cl.exe /Od /utf-8 /D_CRT_SECURE_NO_WARNINGS /std:clatest -MTd -nologo -fp:fast -fp:except- -Gm- -GR- -EHa- -Zo -Oi -WX -W4 -wd4624 -wd4530 -wd4244 -wd4201 -wd4100 -wd4101 -wd4189 -wd4505 -wd4127 -wd4702 -wd4310 -wd4018 -FC -Z7 -I%GITHUB_WORKSPACE%\q -I%GITHUB_WORKSPACE%\t %GITHUB_WORKSPACE%\b\sss.c /Fesss.exe /link -incremental:no -opt:ref
         )
 
     - name: sss.exe Erzeugnis hochladen
