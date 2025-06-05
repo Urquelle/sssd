@@ -1,7 +1,5 @@
 Ersteller für eine Programmiersprache mit folgendem Aussehen
 
-Kommentare:
-
     ## Zeilenkommentar
     ##(
         Mehrzeilenkommentar
@@ -23,10 +21,18 @@ Kommentare:
     カタカナ
 
     ## variablendeklaration
-    a | Datentyp = Initialisierung.
+    a | <optionaler datentyp> = Initialisierung.
 
-    ## funktionsdeklaration
-    fun || (x| d32; y| g64; z| n16) -> bool
+    ## routinedeklaration
+    Routine || (x| d32; y| g64; z| n16) -> bool
     {
         ## rumpf
     }
+
+    ## Haupteinstiegspunkt
+    Ausführen || (arg| []text) -> g32
+    {
+        ## anweisungen
+        res 1.
+    }
+
