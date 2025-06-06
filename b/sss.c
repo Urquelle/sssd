@@ -7,7 +7,6 @@
 #include "dienste/kmd.c"
 #include "kmp/spanne.c"
 #include "kmp/fehler.c"
-#include "kmp/ergebnis.c"
 #include "kmp/diagnostik.c"
 #include "kmp/zone.c"
 #include "kmp/operand.c"

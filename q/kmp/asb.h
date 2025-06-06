@@ -20,53 +20,58 @@ typedef struct KMP_syn_deklaration_t       KMP_syn_deklaration_t;
 typedef struct KMP_syn_ausdruck_kompositum_eigenschaft_t KMP_syn_ausdruck_kompositum_eigenschaft_t;
 
 #define Syn_Knoten_Art \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_GANZZAHL,             1, "Ausdruck Ganzzahl") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_DEZIMALZAHL,          2, "Ausdruck Dezimalzahl") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_TEXT,                 3, "Ausdruck Text") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_BEZEICHNER,           4, "Ausdruck Bezeichner") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_KLAMMER,              5, "Ausdruck Klammer") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_BINÄR,                6, "Ausdruck Binär") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_UNÄR,                 7, "Ausdruck Unär") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_EIGENSCHAFT,          8, "Ausdruck Eigenschaft") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_INDEX,                9, "Ausdruck Index") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_AUFRUF,              10, "Ausdruck Aufruf") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_REIHE,               11, "Ausdruck Reihe") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE,             12, "Ausdruck Brauche") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_KOMPOSITUM,          13, "Ausdruck Kompositum") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_AUSFÜHREN,           14, "Ausdruck Ausführen") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_ROUTINE,             15, "Ausdruck Routine") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_OPTION,              16, "Ausdruck Option") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_SCHABLONE,           17, "Ausdruck Schablone") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_ZERLEGEN,            18, "Ausdruck Zerlegen") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_UNGÜLTIG,             0, "Ungültiger Ausdruck") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_UNGÜLTIG,            1, "Ungültige Anweisung") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_UNGÜLTIG,          2, "Ungültige Deklaration") \
+    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_UNGÜLTIG,       3, "Ungültige Spezifizierung") \
     \
-    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_BEZEICHNER,    20, "Spezifizierung Name") \
-    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_FELD,          21, "Spezifizierung Feld") \
-    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_ZEIGER,        22, "Spezifizierung Zeiger") \
-    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_ROUTINE,       23, "Spezifizierung Routine") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_GANZZAHL,            11, "Ausdruck Ganzzahl") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_DEZIMALZAHL,         12, "Ausdruck Dezimalzahl") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_TEXT,                13, "Ausdruck Text") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_BEZEICHNER,          14, "Ausdruck Bezeichner") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_KLAMMER,             15, "Ausdruck Klammer") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_BINÄR,               16, "Ausdruck Binär") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_UNÄR,                17, "Ausdruck Unär") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_EIGENSCHAFT,         18, "Ausdruck Eigenschaft") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_INDEX,               19, "Ausdruck Index") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_AUFRUF,              20, "Ausdruck Aufruf") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_REIHE,               21, "Ausdruck Reihe") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE,             22, "Ausdruck Brauche") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_KOMPOSITUM,          23, "Ausdruck Kompositum") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_AUSFÜHREN,           24, "Ausdruck Ausführen") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_ROUTINE,             25, "Ausdruck Routine") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_OPTION,              26, "Ausdruck Option") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_SCHABLONE,           27, "Ausdruck Schablone") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_ZERLEGEN,            28, "Ausdruck Zerlegen") \
     \
-    X(KMP_SYN_KNOTEN_DEKLARATION_VARIABLE,         30, "Deklaration Variable") \
-    X(KMP_SYN_KNOTEN_DEKLARATION_SCHABLONE,        31, "Deklaration Schablone") \
-    X(KMP_SYN_KNOTEN_DEKLARATION_ROUTINE,          32, "Deklaration Routine") \
-    X(KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE,          33, "Deklaration Brauche") \
-    X(KMP_SYN_KNOTEN_DEKLARATION_OPTION,           34, "Deklaration Option") \
+    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_BEZEICHNER,    30, "Spezifizierung Name") \
+    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_FELD,          31, "Spezifizierung Feld") \
+    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_ZEIGER,        32, "Spezifizierung Zeiger") \
+    X(KMP_SYN_KNOTEN_SPEZIFIZIERUNG_ROUTINE,       33, "Spezifizierung Routine") \
     \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_ZUWEISUNG,          40, "Anweisung Zuweisung") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_WENN,               41, "Anweisung Wenn") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_FÜR,                42, "Anweisung Für") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_BLOCK,              43, "Anweisung Block") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_DEKLARATION,        44, "Anweisung Deklaration") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE,            45, "Anweisung Brauche") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_LADE,               46, "Anweisung Lade") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_AUSDRUCK,           47, "Anweisung Ausdruck") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_FINAL,              48, "Anweisung Final") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_WEICHE,             49, "Anweisung Weiche") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_RES,                50, "Anweisung Res") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_SOLANGE,            51, "Anweisung Solange") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_WEITER,             52, "Anweisung Weiter") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_SPRUNG,             53, "Anweisung Sprung") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_RAUS,               54, "Anweisung Raus") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_MARKIERUNG,         55, "Anweisung Markierung") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_BEDINGTER_SPRUNG,   56, "Anweisung Bedingter Sprung")
+    X(KMP_SYN_KNOTEN_DEKLARATION_VARIABLE,         40, "Deklaration Variable") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_SCHABLONE,        41, "Deklaration Schablone") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_ROUTINE,          42, "Deklaration Routine") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE,          43, "Deklaration Brauche") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_OPTION,           44, "Deklaration Option") \
+    \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_ZUWEISUNG,          50, "Anweisung Zuweisung") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_WENN,               51, "Anweisung Wenn") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_FÜR,                52, "Anweisung Für") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_BLOCK,              53, "Anweisung Block") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_DEKLARATION,        54, "Anweisung Deklaration") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE,            55, "Anweisung Brauche") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_LADE,               56, "Anweisung Lade") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_AUSDRUCK,           57, "Anweisung Ausdruck") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_FINAL,              58, "Anweisung Final") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_WEICHE,             59, "Anweisung Weiche") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_RES,                60, "Anweisung Res") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_SOLANGE,            61, "Anweisung Solange") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_WEITER,             62, "Anweisung Weiter") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_SPRUNG,             63, "Anweisung Sprung") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_RAUS,               64, "Anweisung Raus") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_MARKIERUNG,         65, "Anweisung Markierung") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_BEDINGTER_SPRUNG,   66, "Anweisung Bedingter Sprung")
 enum KMP_syn_knoten_art_e
 {
 #define X(N, W, ...) N = W,
@@ -121,13 +126,6 @@ struct KMP_syn_muster_t
     KMP_syn_anweisung_t* anweisung;
 };
 
-struct KMP_syn_knoten_t
-{
-    g64 id;
-    g32 art;
-    KMP_spanne_t spanne;
-};
-
 struct KMP_syn_asb_t
 {
     BSS_Feld(KMP_knoten_t*) anweisungen;
@@ -139,6 +137,13 @@ struct KMP_syn_ausdruck_kompositum_eigenschaft_t
     BSS_text_t name;
     KMP_syn_ausdruck_t* ausdruck;
     w32 ist_benamt;
+};
+
+struct KMP_syn_knoten_t
+{
+    g64 id;
+    g32 art;
+    KMP_spanne_t spanne;
 };
 
 struct KMP_syn_ausdruck_t
@@ -411,6 +416,7 @@ KMP_syn_marke_t* kmp_syn_marke(BSS_speicher_t* speicher, KMP_spanne_t spanne, BS
 KMP_syn_knoten_t* kmp_syn_knoten(BSS_speicher_t *speicher, g32 art, KMP_spanne_t spanne);
 
 KMP_syn_ausdruck_t* kmp_syn_ausdruck(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne);
+KMP_syn_ausdruck_t* kmp_syn_ausdruck_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_ganzzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, g32 wert);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_dezimalzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, d32 wert);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_bezeichner(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t wert);
@@ -436,6 +442,7 @@ KMP_syn_spezifizierung_t* kmp_syn_spezifizierung_zeiger(BSS_speicher_t* speicher
 KMP_syn_spezifizierung_t* kmp_syn_spezifizierung_routine(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(KMP_syn_spezifizierung_t*) parameter, KMP_syn_spezifizierung_t* rückgabe);
 
 KMP_syn_deklaration_t* kmp_syn_deklaration(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung);
+KMP_syn_deklaration_t* kmp_syn_deklaration_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne);
 KMP_syn_deklaration_t* kmp_syn_deklaration_variable(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung, KMP_syn_ausdruck_t* initialisierung);
 KMP_syn_deklaration_t* kmp_syn_deklaration_routine(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung, KMP_syn_ausdruck_t* ausdruck);
 KMP_syn_deklaration_t* kmp_syn_deklaration_schablone(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, BSS_Feld(KMP_syn_deklaration_t*) eigenschaften);
@@ -443,6 +450,7 @@ KMP_syn_deklaration_t* kmp_syn_deklaration_brauche(BSS_speicher_t* speicher, KMP
 KMP_syn_deklaration_t* kmp_syn_deklaration_option(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck);
 
 KMP_syn_anweisung_t* kmp_syn_anweisung(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne);
+KMP_syn_anweisung_t* kmp_syn_anweisung_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne);
 KMP_syn_anweisung_t* kmp_syn_anweisung_zuweisung(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_glied_t* op, KMP_syn_ausdruck_t* links, KMP_syn_ausdruck_t* rechts);
 KMP_syn_anweisung_t* kmp_syn_anweisung_wenn(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* bedingung, KMP_syn_anweisung_t* rumpf, KMP_syn_anweisung_t* alternative);
 KMP_syn_anweisung_t* kmp_syn_anweisung_für(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* index, KMP_syn_ausdruck_t* bedingung, KMP_syn_anweisung_t* rumpf);

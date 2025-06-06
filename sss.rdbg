@@ -1,13 +1,18 @@
 // raddbg 0.9.19 project file
 
-recent_file: path: "q/kmp/semantik.c"
-recent_file: path: "q/kmp/zone.c"
-recent_file: path: "q/kmp/symbol.c"
+recent_file: path: "q/kmp/lexer.c"
 recent_file: path: "q/basis/feld.c"
-recent_file: path: "q/basis/text.c"
-recent_file: path: "q/kmp/spanne.c"
-recent_file: path: "q/basis/speicher.c"
+recent_file: path: "q/kmp/glied.c"
+recent_file: path: "q/kmp/syntax.c"
+recent_file: path: "q/kmp/semantik.c"
 recent_file: path: "b/sss.c"
+recent_file: path: "d/test_direktive.sss"
+recent_file: path: "q/basis/speicher.c"
+recent_file: path: "q/kmp/zone.c"
+recent_file: path: "q/basis/text.c"
+recent_file: path: "D:/os/obj/amd64fre/minkernel/crts/ucrt/src/appcrt/heap/xmt/objfre/amd64/minkernel/crts/ucrt/src/appcrt/heap/debug_heap.cpp"
+recent_file: path: "q/kmp/symbol.c"
+recent_file: path: "q/kmp/spanne.c"
 target:
 {
   executable: "e/sss.exe"
@@ -18,11 +23,16 @@ target:
 }
 breakpoint:
 {
-  source_location: "b/sss.c:94:1"
+  source_location: "q/kmp/semantik.c:49:1"
   hit_count: 0
 }
 breakpoint:
 {
-  source_location: "q/kmp/semantik.c:1806:1"
-  hit_count: 1
+  source_location: "q/kmp/lexer.c:271:1"
+  hit_count: 0
+}
+breakpoint:
+{
+  source_location: "q/kmp/lexer.c:416:16"
+  hit_count: 0
 }

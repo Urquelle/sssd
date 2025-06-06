@@ -1,7 +1,5 @@
 #include "kmp/spanne.h"
 
-#include <memory.h>
-
 KMP_spanne_t
 kmp_spanne()
 {
@@ -56,7 +54,7 @@ kmp_spanne_text_kopieren(BSS_speicher_t *speicher, KMP_spanne_t spanne)
     g32        text_länge = spanne.länge;
 
     char * erg = speicher->anfordern(speicher, text_länge + 1);
-    memcpy(erg, utf8_text.daten, text_länge);
+    bss_speicher_kopieren(erg, utf8_text.daten, text_länge);
     erg[text_länge] = 0;
 
     return (BSS_text_t)
