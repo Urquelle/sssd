@@ -17,23 +17,25 @@ bss_feld(BSS_speicher_t* speicher, g32 element_größe)
 }
 
 void
-bss_feld_hinzufügen(BSS_speicher_t* speicher, BSS_feld_t *feld, void *element)
+bss_feld_hinzufügen(BSS_speicher_t* speicher, BSS_feld_t* feld, void* element)
 {
     if (feld->anzahl_elemente >= feld->max_anzahl_elemente)
     {
-        void* daten = speicher->anfordern(speicher, feld->element_größe*feld->max_anzahl_elemente*2);
-        memcpy(daten, feld->daten, feld->anzahl_elemente*feld->element_größe);
+        g32 neue_max_anzahl = feld->max_anzahl_elemente * 2;
+        void* neue_daten = speicher->anfordern(speicher, feld->element_größe * neue_max_anzahl);
+        bss_speicher_kopieren(neue_daten, feld->daten, feld->anzahl_elemente * feld->element_größe);
         speicher->freigeben(feld->daten);
-        feld->daten = daten;
+        feld->daten = neue_daten;
+        feld->max_anzahl_elemente = neue_max_anzahl;
     }
 
-    void *daten = speicher->anfordern(speicher, feld->element_größe);
-    memcpy(daten, element, feld->element_größe);
+    void* ziel = (g8*)feld->daten + (feld->anzahl_elemente * feld->element_größe);
+    bss_speicher_kopieren(ziel, element, feld->element_größe);
 
     feld->anzahl_elemente += 1;
 }
 
-void *
+void*
 bss_feld_element(BSS_feld_t feld, g32 index)
 {
     if (index >= feld.anzahl_elemente)
@@ -47,7 +49,7 @@ bss_feld_element(BSS_feld_t feld, g32 index)
 }
 
 void
-bss_feld_leeren(BSS_feld_t *feld)
+bss_feld_leeren(BSS_feld_t* feld)
 {
     feld->anzahl_elemente = 0;
 }

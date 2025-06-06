@@ -19,7 +19,8 @@ struct BSS_speicher_t
 
 void* BSS_speicher_anfordern_arena(BSS_speicher_t* speicher, g64 größe);
 void BSS_speicher_freigeben_arena(BSS_speicher_t* speicher);
-BSS_speicher_t bss_speicher_arena();
+BSS_speicher_t bss_speicher_arena(void);
+void* bss_speicher_kopieren(void* ziel_ptr, void* quelle_ptr, g32 anzahl_bytes);
 
 #endif
 

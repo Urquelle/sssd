@@ -18,9 +18,9 @@ struct BSS_feld_t
 };
 
 BSS_feld_t bss_feld(BSS_speicher_t* speicher, g32 element_größe);
-void bss_feld_hinzufügen(BSS_speicher_t* speicher, BSS_feld_t *feld, void *element);
+void bss_feld_hinzufügen(BSS_speicher_t* speicher, BSS_feld_t* feld, void* element);
 void* bss_feld_element(BSS_feld_t feld, g32 index);
-void bss_feld_leeren(BSS_feld_t *feld);
+void bss_feld_leeren(BSS_feld_t* feld);
 
 #endif
 
