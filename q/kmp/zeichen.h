@@ -11,7 +11,7 @@ struct KMP_zeichen_t
 {
     BSS_text_t utf8;
     BSS_text_t quelldatei;
-    g32        codepoint;
+    n32        codepoint;
     BSS_text_t text;
     g32        versatz;
     g8         byte_länge;

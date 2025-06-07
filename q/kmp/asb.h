@@ -36,7 +36,7 @@ typedef struct KMP_syn_ausdruck_kompositum_eigenschaft_t KMP_syn_ausdruck_kompos
     X(KMP_SYN_KNOTEN_AUSDRUCK_INDEX,               19, "Ausdruck Index") \
     X(KMP_SYN_KNOTEN_AUSDRUCK_AUFRUF,              20, "Ausdruck Aufruf") \
     X(KMP_SYN_KNOTEN_AUSDRUCK_REIHE,               21, "Ausdruck Reihe") \
-    X(KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE,             22, "Ausdruck Brauche") \
+    X(KMP_SYN_KNOTEN_AUSDRUCK_IMPORT,             22, "Ausdruck Import") \
     X(KMP_SYN_KNOTEN_AUSDRUCK_KOMPOSITUM,          23, "Ausdruck Kompositum") \
     X(KMP_SYN_KNOTEN_AUSDRUCK_AUSFÜHREN,           24, "Ausdruck Ausführen") \
     X(KMP_SYN_KNOTEN_AUSDRUCK_ROUTINE,             25, "Ausdruck Routine") \
@@ -52,7 +52,7 @@ typedef struct KMP_syn_ausdruck_kompositum_eigenschaft_t KMP_syn_ausdruck_kompos
     X(KMP_SYN_KNOTEN_DEKLARATION_VARIABLE,         40, "Deklaration Variable") \
     X(KMP_SYN_KNOTEN_DEKLARATION_SCHABLONE,        41, "Deklaration Schablone") \
     X(KMP_SYN_KNOTEN_DEKLARATION_ROUTINE,          42, "Deklaration Routine") \
-    X(KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE,          43, "Deklaration Brauche") \
+    X(KMP_SYN_KNOTEN_DEKLARATION_IMPORT,          43, "Deklaration Import") \
     X(KMP_SYN_KNOTEN_DEKLARATION_OPTION,           44, "Deklaration Option") \
     \
     X(KMP_SYN_KNOTEN_ANWEISUNG_ZUWEISUNG,          50, "Anweisung Zuweisung") \
@@ -60,7 +60,7 @@ typedef struct KMP_syn_ausdruck_kompositum_eigenschaft_t KMP_syn_ausdruck_kompos
     X(KMP_SYN_KNOTEN_ANWEISUNG_FÜR,                52, "Anweisung Für") \
     X(KMP_SYN_KNOTEN_ANWEISUNG_BLOCK,              53, "Anweisung Block") \
     X(KMP_SYN_KNOTEN_ANWEISUNG_DEKLARATION,        54, "Anweisung Deklaration") \
-    X(KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE,            55, "Anweisung Brauche") \
+    X(KMP_SYN_KNOTEN_ANWEISUNG_IMPORT,            55, "Anweisung Import") \
     X(KMP_SYN_KNOTEN_ANWEISUNG_LADE,               56, "Anweisung Lade") \
     X(KMP_SYN_KNOTEN_ANWEISUNG_AUSDRUCK,           57, "Anweisung Ausdruck") \
     X(KMP_SYN_KNOTEN_ANWEISUNG_FINAL,              58, "Anweisung Final") \
@@ -142,7 +142,7 @@ struct KMP_syn_ausdruck_kompositum_eigenschaft_t
 struct KMP_syn_knoten_t
 {
     g64 id;
-    g32 art;
+    KMP_syn_knoten_art_e art;
     KMP_spanne_t spanne;
 };
 
@@ -222,7 +222,7 @@ struct KMP_syn_ausdruck_t
         struct
         {
             BSS_text_t dateiname;
-        } brauche;
+        } import;
 
         struct
         {
@@ -314,7 +314,7 @@ struct KMP_syn_deklaration_t
         struct
         {
             KMP_syn_ausdruck_t* ausdruck;
-        } brauche;
+        } import;
 
         struct
         {
@@ -370,9 +370,9 @@ struct KMP_syn_anweisung_t
         struct
         {
             BSS_text_t dateiname;
-        } brauche;
+        } import;
 
-        // FRAGE: wird das noch genutzt, oder ist das durch brauche ersetzt worden?
+        // FRAGE: wird das noch genutzt, oder ist das durch import ersetzt worden?
         struct
         {
             BSS_text_t dateiname;
@@ -429,7 +429,7 @@ KMP_syn_ausdruck_t* kmp_syn_ausdruck_eigenschaft(BSS_speicher_t* speicher, KMP_s
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_aufruf(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* basis, BSS_Feld(KMP_syn_ausdruck_t*) argumente);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_ausführen(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* ausdruck);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_reihe(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* min, KMP_syn_ausdruck_t* max);
-KMP_syn_ausdruck_t* kmp_syn_ausdruck_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname);
+KMP_syn_ausdruck_t* kmp_syn_ausdruck_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_kompositum(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(KMP_syn_ausdruck_kompositum_eigenschaft_t*) eigenschaften, w32 ist_benamt, KMP_syn_spezifizierung_t* spezifizierung);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_routine(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(KMP_syn_deklaration_t*) parameter, KMP_syn_spezifizierung_t* rückgabe, KMP_syn_anweisung_t* rumpf);
 KMP_syn_ausdruck_t* kmp_syn_ausdruck_schablone(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(KMP_syn_deklaration_t*) eigenschaften);
@@ -446,7 +446,7 @@ KMP_syn_deklaration_t* kmp_syn_deklaration_ungültig(BSS_speicher_t* speicher, K
 KMP_syn_deklaration_t* kmp_syn_deklaration_variable(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung, KMP_syn_ausdruck_t* initialisierung);
 KMP_syn_deklaration_t* kmp_syn_deklaration_routine(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung, KMP_syn_ausdruck_t* ausdruck);
 KMP_syn_deklaration_t* kmp_syn_deklaration_schablone(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, BSS_Feld(KMP_syn_deklaration_t*) eigenschaften);
-KMP_syn_deklaration_t* kmp_syn_deklaration_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck);
+KMP_syn_deklaration_t* kmp_syn_deklaration_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck);
 KMP_syn_deklaration_t* kmp_syn_deklaration_option(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck);
 
 KMP_syn_anweisung_t* kmp_syn_anweisung(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne);
@@ -457,7 +457,7 @@ KMP_syn_anweisung_t* kmp_syn_anweisung_für(BSS_speicher_t* speicher, KMP_spanne
 KMP_syn_anweisung_t* kmp_syn_anweisung_solange(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* bedingung, KMP_syn_anweisung_t* rumpf);
 KMP_syn_anweisung_t* kmp_syn_anweisung_block(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(KMP_syn_anweisung_t*) anweisungen);
 KMP_syn_anweisung_t* kmp_syn_anweisung_deklaration(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_deklaration_t* deklaration);
-KMP_syn_anweisung_t* kmp_syn_anweisung_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname);
+KMP_syn_anweisung_t* kmp_syn_anweisung_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname);
 KMP_syn_anweisung_t* kmp_syn_anweisung_lade(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname);
 KMP_syn_anweisung_t* kmp_syn_anweisung_ausdruck(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_ausdruck_t* ausdruck);
 KMP_syn_anweisung_t* kmp_syn_anweisung_final(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_anweisung_t* anweisung);

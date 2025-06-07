@@ -14,7 +14,7 @@ char* SCHLÜSSELWORT_WENN      = "wenn";       // INFO: if
 char* SCHLÜSSELWORT_FÜR       = "für";        // INFO: for
 char* SCHLÜSSELWORT_SOLANGE   = "solange";    // INFO: while
 char* SCHLÜSSELWORT_SONST     = "sonst";      // INFO: else
-char* SCHLÜSSELWORT_BRAUCHE   = "brauche";    // INFO: import
+char* SCHLÜSSELWORT_IMPORT    = "import";     // INFO: import
 char* SCHLÜSSELWORT_LADE      = "lade";       // INFO: include
 char* SCHLÜSSELWORT_FINAL     = "final";      // INFO: defer
 char* SCHLÜSSELWORT_RES       = "res";        // INFO: resultat -> return
@@ -22,25 +22,6 @@ char* SCHLÜSSELWORT_MARKE     = "marke";
 char* SCHLÜSSELWORT_WEITER    = "weiter";     // INFO: continue
 char* SCHLÜSSELWORT_SPRUNG    = "sprung";     // INFO: goto
 char* SCHLÜSSELWORT_RAUS      = "raus";       // INFO: break
-
-void
-kmp_syn_melden_spanne(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_spanne_t spanne, KMP_fehler_t* fehler)
-{
-    kmp_diagnostik_melden_fehler(speicher, &syntax->diagnostik, spanne, fehler);
-    /*__debugbreak();*/
-}
-
-void
-kmp_syn_melden_knoten(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_syn_knoten_t* knoten, KMP_fehler_t* fehler)
-{
-    kmp_syn_melden_spanne(speicher, syntax, knoten->spanne, fehler);
-}
-
-void
-kmp_syn_melden_glied(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_glied_t* glied, KMP_fehler_t* fehler)
-{
-    kmp_syn_melden_spanne(speicher, syntax, glied->spanne, fehler);
-}
 
 KMP_syntax_t*
 kmp_syntax(BSS_speicher_t* speicher, BSS_Feld(KMP_glied_t*) glieder)
@@ -131,7 +112,7 @@ kmp_syn_marken_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
     }
 
     if (!kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 1) ||
-         bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_MARKE)) != 0)
+        !bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_MARKE)))
     {
         return erg;
     }
@@ -177,57 +158,57 @@ kmp_syn_anweisung_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WENN)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WENN)))
     {
         anweisung = kmp_syn_wenn_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_FÜR)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_FÜR)))
     {
         anweisung = kmp_syn_für_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SOLANGE)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SOLANGE)))
     {
         anweisung = kmp_syn_solange_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WEICHE)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WEICHE)))
     {
         anweisung = kmp_syn_weiche_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_FINAL)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_FINAL)))
     {
         anweisung = kmp_syn_final_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_RES)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_RES)))
     {
         anweisung = kmp_syn_res_anweisung_einlesen(speicher, syntax);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WEITER)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WEITER)))
     {
         anweisung = kmp_syn_weiter_anweisung_einlesen(speicher, syntax);
         kmp_syn_erwarte(syntax, KMP_GLIED_PUNKT);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SPRUNG)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SPRUNG)))
     {
         anweisung = kmp_syn_sprung_anweisung_einlesen(speicher, syntax);
         kmp_syn_erwarte(syntax, KMP_GLIED_PUNKT);
     }
 
     else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_RAUS)) == 0)
+             bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_RAUS)))
     {
         anweisung = kmp_syn_raus_anweisung_einlesen(speicher, syntax);
         kmp_syn_erwarte(syntax, KMP_GLIED_PUNKT);
@@ -242,19 +223,19 @@ kmp_syn_anweisung_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
     else if (kmp_syn_ist(syntax, KMP_GLIED_RAUTE, 0))
     {
         if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 1) &&
-            bss_text_ist_gleich(kmp_syn_glied(syntax, 1)->text, bss_text(SCHLÜSSELWORT_BRAUCHE)) == 0)
+            bss_text_ist_gleich(kmp_syn_glied(syntax, 1)->text, bss_text(SCHLÜSSELWORT_IMPORT)))
         {
             KMP_syn_ausdruck_t* ausdruck = kmp_syn_basis_ausdruck_einlesen(speicher, syntax);
-            if (ausdruck->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE)
+            if (ausdruck->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_IMPORT)
             {
                 assert(!"meldung erstatten");
             }
 
-            anweisung = kmp_syn_anweisung_brauche(speicher, ausdruck->basis->spanne, ausdruck->brauche.dateiname);
+            anweisung = kmp_syn_anweisung_import(speicher, ausdruck->basis->spanne, ausdruck->import.dateiname);
         }
 
         else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 1) &&
-                 bss_text_ist_gleich(kmp_syn_glied(syntax, 1)->text, bss_text(SCHLÜSSELWORT_LADE)) == 0)
+                 bss_text_ist_gleich(kmp_syn_glied(syntax, 1)->text, bss_text(SCHLÜSSELWORT_LADE)))
         {
             kmp_syn_weiter(syntax, 2);
 
@@ -351,11 +332,11 @@ kmp_syn_wenn_anweisung_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
 
     KMP_syn_anweisung_t* alternative_anweisung = NULL;
     if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-        bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SONST)) == 0)
+        bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SONST)))
     {
         KMP_glied_t* alternative = kmp_syn_weiter(syntax, 1);
         if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-            bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WENN)) == 0)
+            bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_WENN)))
         {
             alternative_anweisung = kmp_syn_wenn_anweisung_einlesen(speicher, syntax);
         }
@@ -397,7 +378,7 @@ kmp_syn_markierung_anweisung_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* sy
     if (markierung->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_BEZEICHNER)
     {
         KMP_fehler_t* fehler = kmp_fehler(speicher, bss_text("gültigen Bezeichner erwartet."));
-        kmp_syn_melden_knoten(speicher, syntax, markierung->basis, fehler);
+        kmp_diagnostik_melden_fehler(speicher, &syntax->diagnostik, markierung->basis->spanne, fehler);
         return NULL;
     }
 
@@ -537,7 +518,8 @@ kmp_syn_sprung_anweisung_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax
     KMP_syn_ausdruck_t* ausdruck = kmp_syn_ausdruck_einlesen(speicher, syntax);
     if (ausdruck->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_BEZEICHNER)
     {
-        kmp_syn_melden_knoten(speicher, syntax, ausdruck->basis, kmp_fehler(speicher, bss_text("Bezeichner erwartet.")));
+        KMP_fehler_t* fehler = kmp_fehler(speicher, bss_text("Bezeichner erwartet."));
+        kmp_diagnostik_melden_fehler(speicher, &syntax->diagnostik, ausdruck->basis->spanne, fehler);
     }
 
     KMP_spanne_t spanne = kmp_spanne_bereich(schlüsselwort->spanne, ausdruck->basis->spanne);
@@ -649,7 +631,7 @@ kmp_syn_deklaration_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax, w32
             }
         }
         else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-                 bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_OPTION)) == 0)
+                 bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_OPTION)))
         {
             KMP_syn_ausdruck_t* ausdruck = kmp_syn_basis_ausdruck_einlesen(speicher, syntax);
             KMP_spanne_t spanne = kmp_spanne_bereich(anfang->spanne, ausdruck->basis->spanne);
@@ -663,7 +645,7 @@ kmp_syn_deklaration_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax, w32
         }
 
         else if (kmp_syn_ist(syntax, KMP_GLIED_BEZEICHNER, 0) &&
-                 bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SCHABLONE)) == 0)
+                 bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_SCHABLONE)))
         {
             KMP_glied_t* schlüsselwort = kmp_syn_weiter(syntax, 1);
             kmp_syn_erwarte(syntax, KMP_GLIED_GKLAMMER_AUF);
@@ -696,13 +678,13 @@ kmp_syn_deklaration_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax, w32
         else if (kmp_syn_ist(syntax, KMP_GLIED_RAUTE, 0))
         {
             KMP_syn_ausdruck_t* ausdruck = kmp_syn_basis_ausdruck_einlesen(speicher, syntax);
-            if (ausdruck->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE)
+            if (ausdruck->basis->art != KMP_SYN_KNOTEN_AUSDRUCK_IMPORT)
             {
                 assert(!"meldung erstatten");
                 return NULL;
             }
 
-            KMP_syn_deklaration_t* erg = kmp_syn_deklaration_brauche(
+            KMP_syn_deklaration_t* erg = kmp_syn_deklaration_import(
                 speicher,
                 kmp_spanne(),
                 namen,
@@ -966,7 +948,7 @@ kmp_syn_basis_ausdruck_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
         {
             KMP_glied_t* raute = kmp_syn_weiter(syntax, 1);
             if (kmp_syn_glied(syntax, 0)->art == KMP_GLIED_BEZEICHNER &&
-                bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_BRAUCHE)) == 0)
+                bss_text_ist_gleich(kmp_syn_glied(syntax, 0)->text, bss_text(SCHLÜSSELWORT_IMPORT)))
             {
                 kmp_syn_weiter(syntax, 1);
 
@@ -977,7 +959,7 @@ kmp_syn_basis_ausdruck_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
                 }
 
                 KMP_spanne_t spanne = kmp_spanne_bereich(raute->spanne, dateiname->basis->spanne);
-                KMP_syn_ausdruck_t* erg = kmp_syn_ausdruck_brauche(
+                KMP_syn_ausdruck_t* erg = kmp_syn_ausdruck_import(
                     speicher,
                     spanne,
                     dateiname->text.wert
@@ -1027,7 +1009,7 @@ kmp_syn_basis_ausdruck_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
 
         case KMP_GLIED_BEZEICHNER:
         {
-            if (bss_text_ist_gleich(t->text, bss_text(SCHLÜSSELWORT_SCHABLONE)) == 0 &&
+            if (bss_text_ist_gleich(t->text, bss_text(SCHLÜSSELWORT_SCHABLONE)) &&
                 kmp_syn_ist(syntax, KMP_GLIED_GKLAMMER_AUF, 1))
             {
                 KMP_glied_t* anfang = kmp_syn_weiter(syntax, 1);
@@ -1057,7 +1039,8 @@ kmp_syn_basis_ausdruck_einlesen(BSS_speicher_t* speicher, KMP_syntax_t* syntax)
                 return erg;
             }
 
-            else if (bss_text_ist_gleich(t->text, bss_text(SCHLÜSSELWORT_OPTION)) == 0 && kmp_syn_ist(syntax, KMP_GLIED_GKLAMMER_AUF, 1))
+            else if (bss_text_ist_gleich(t->text, bss_text(SCHLÜSSELWORT_OPTION)) &&
+                     kmp_syn_ist(syntax, KMP_GLIED_GKLAMMER_AUF, 1))
             {
                 KMP_glied_t* anfang = kmp_syn_weiter(syntax, 1);
                 KMP_glied_t* klammer_auf = kmp_syn_erwarte(syntax, KMP_GLIED_GKLAMMER_AUF);

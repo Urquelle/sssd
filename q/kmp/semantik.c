@@ -66,20 +66,20 @@ kmp_sem_importe_registrieren(BSS_speicher_t* speicher, KMP_semantik_t* semantik)
     for (g32 i = 0; i < semantik->syn_asb->anweisungen.anzahl_elemente; ++i)
     {
         KMP_syn_anweisung_t* anweisung = bss_feld_element(semantik->syn_asb->anweisungen, i);
-        if (anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE)
+        if (anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_IMPORT)
         {
-            kmp_sem_import_verarbeiten(speicher, semantik, anweisung->brauche.dateiname);
+            kmp_sem_import_verarbeiten(speicher, semantik, anweisung->import.dateiname);
         }
 
         else if (anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_DEKLARATION)
         {
             KMP_syn_deklaration_t* deklaration = anweisung->deklaration.deklaration;
-            if (deklaration->basis->art != KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE)
+            if (deklaration->basis->art != KMP_SYN_KNOTEN_DEKLARATION_IMPORT)
             {
                 continue;
             }
 
-            BSS_text_t dateiname = deklaration->brauche.ausdruck->text.wert;
+            BSS_text_t dateiname = deklaration->import.ausdruck->text.wert;
             BSS_text_t name = *(BSS_text_t*) bss_feld_element(deklaration->namen, 0);
 
             FILE *datei;
@@ -109,7 +109,7 @@ kmp_sem_importe_registrieren(BSS_speicher_t* speicher, KMP_semantik_t* semantik)
 
             KMP_sem_zone_t* global_neu = kmp_sem_zone(speicher, name, semantik->system);
             KMP_semantik_t* semantik_neu = kmp_semantik(speicher, &asb, semantik->system, global_neu);
-            KMP_sem_asb_t* brauche_sem_asb = kmp_sem_starten(speicher, semantik_neu, false);
+            KMP_sem_asb_t* import_sem_asb = kmp_sem_starten(speicher, semantik_neu, false);
             KMP_sem_symbol_t* symbol = kmp_sem_symbol_zone(speicher, deklaration->basis->spanne, KMP_SYM_MODUL, KMP_SYM_BEHANDELT, name, global_neu);
             deklaration->symbol = symbol;
 
@@ -138,9 +138,9 @@ kmp_sem_deklarationen_registrieren(BSS_speicher_t* speicher, KMP_semantik_t* sem
             BSS_text_t name = *(BSS_text_t*) bss_feld_element(deklaration->namen, namen_idx);
             switch (deklaration->basis->art)
             {
-                case KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE:
+                case KMP_SYN_KNOTEN_DEKLARATION_IMPORT:
                 {
-                    // INFO: deklaration "brauche" wird bereits in der methode importe_registrieren behandelt.
+                    // INFO: deklaration "import" wird bereits in der methode importe_registrieren behandelt.
                 } break;
 
                 case KMP_SYN_KNOTEN_DEKLARATION_VARIABLE:
@@ -322,7 +322,7 @@ kmp_sem_globale_anweisungen_der_hauptmethode_zuordnen(BSS_speicher_t*speicher, K
         KMP_syn_anweisung_t* anweisung = bss_feld_element(semantik->syn_asb->anweisungen, i);
         if (anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_DEKLARATION ||
             anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_LADE        ||
-            anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE)
+            anweisung->basis->art == KMP_SYN_KNOTEN_ANWEISUNG_IMPORT)
         {
             continue;
         }

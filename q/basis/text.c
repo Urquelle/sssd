@@ -7,6 +7,7 @@ bss_text(char *text)
 
     erg.daten = text;
     erg.größe = bss_text_größe(erg);
+    erg.länge = bss_text_länge(erg);
 
     return erg;
 }
@@ -14,7 +15,7 @@ bss_text(char *text)
 g64
 bss_text_größe(BSS_text_t text)
 {
-    char *z = text.daten;
+    char* z = text.daten;
     g64 erg = 0;
 
     while (*z)
@@ -29,27 +30,53 @@ bss_text_größe(BSS_text_t text)
 g64
 bss_text_länge(BSS_text_t text)
 {
-    char *z = text.daten;
+    char* z = text.daten;
     g64 erg = 0;
 
     while (*z)
     {
-        //
+        g32 größe = bss_text_utf8_zeichen_größe(z);
+        erg += größe;
+        z += größe;
     }
 
     return erg;
 }
 
 g32
-bss_text_utf8_dekodieren(BSS_text_t text, g8 *daten)
+bss_text_utf8_zeichen_größe(char* text)
 {
-    g8* bytes = (g8 *) text.daten;
+    g8* bytes = (g8*)text;
+
+    if ((bytes[0] & 0x80) == 0)
+    {
+        return 1;
+    }
+    else if ((bytes[0] & 0xE0) == 0xC0)
+    {
+        return 2;
+    }
+    else if ((bytes[0] & 0xF0) == 0xE0)
+    {
+        return 3;
+    }
+    else if ((bytes[0] & 0xF8) == 0xF0)
+    {
+        return 4;
+    }
+
+    return 0;
+}
+
+g32
+bss_text_utf8_dekodieren(BSS_text_t text, g8* daten)
+{
+    g8* bytes = (g8*)text.daten;
     g32 codepoint = 0;
 
     if ((bytes[0] & 0x80) == 0)
     {
         *daten = 1;
-
         return bytes[0];
     }
     else if ((bytes[0] & 0xE0) == 0xC0 && text.größe >= 2)
@@ -71,7 +98,6 @@ bss_text_utf8_dekodieren(BSS_text_t text, g8 *daten)
     else
     {
         *daten = 1;
-
         return bytes[0];
     }
 

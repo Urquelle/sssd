@@ -50,28 +50,36 @@ kmp_spanne_zeichen(KMP_zeichen_t von, KMP_zeichen_t bis)
 BSS_text_t
 kmp_spanne_text_kopieren(BSS_speicher_t *speicher, KMP_spanne_t spanne)
 {
-    BSS_text_t utf8_text  = spanne.von.utf8;
-    g32        text_länge = spanne.länge;
+    BSS_text_t utf8_text = spanne.von.utf8;
+    g32 text_länge = spanne.länge;
 
-    char * erg = speicher->anfordern(speicher, text_länge + 1);
+    char* erg = speicher->anfordern(speicher, text_länge + 1);
     bss_speicher_kopieren(erg, utf8_text.daten, text_länge);
     erg[text_länge] = 0;
 
     return (BSS_text_t)
     {
-        .daten = erg
+        .daten = erg,
+        .länge = text_länge
     };
 }
 
 void
 kmp_spanne_länge_berechnen(KMP_spanne_t *spanne)
 {
-    uint32_t   länge = 1;
+    g32 länge = 0;
     BSS_text_t anfang = spanne->von.utf8;
 
-    while (anfang.daten != spanne->bis.utf8.daten)
+    if (anfang.daten > spanne->bis.utf8.daten)
     {
-        länge        += 1;
+        fprintf(stderr, "Ungültige Spanne: von > bis\n");
+        spanne->länge = 0;
+        return;
+    }
+
+    while (anfang.daten < spanne->bis.utf8.daten)
+    {
+        länge += 1;
         anfang.daten += 1;
     }
 

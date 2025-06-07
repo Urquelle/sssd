@@ -5,9 +5,9 @@ kmp_glied(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne)
 {
     KMP_glied_t *erg = (KMP_glied_t *) speicher->anfordern(speicher, sizeof(KMP_glied_t));
 
-    erg->art    = art;
+    erg->art = art;
     erg->spanne = spanne;
-    erg->text   = kmp_spanne_text_kopieren(speicher, spanne);
+    erg->text = kmp_spanne_text_kopieren(speicher, spanne);
 
     return erg;
 }
@@ -31,7 +31,6 @@ kmp_glied_ganzzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, g32 wert, g32 
 {
     KMP_glied_t* erg = kmp_glied(speicher, KMP_GLIED_GANZZAHL, spanne);
 
-    erg->art      = KMP_GLIED_GANZZAHL;
     erg->gz.basis = basis;
     erg->gz.wert  = wert;
 

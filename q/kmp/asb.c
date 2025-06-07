@@ -1,4 +1,5 @@
 #include "kmp/asb.h"
+#include "basis/speicher.h"
 
 g64 global_id = 0;
 
@@ -40,9 +41,16 @@ kmp_syn_knoten(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne)
 KMP_syn_ausdruck_t*
 kmp_syn_ausdruck(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne)
 {
-
     KMP_syn_ausdruck_t* erg  = speicher->anfordern(speicher, sizeof(KMP_syn_ausdruck_t));
     erg->basis = kmp_syn_knoten(speicher, art, spanne);
+
+    return erg;
+}
+
+KMP_syn_ausdruck_t*
+kmp_syn_ausdruck_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne)
+{
+    KMP_syn_ausdruck_t* erg = kmp_syn_ausdruck(speicher, KMP_SYN_KNOTEN_AUSDRUCK_UNGÜLTIG, spanne);
 
     return erg;
 }
@@ -175,11 +183,11 @@ kmp_syn_ausdruck_reihe(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP_syn_au
 }
 
 KMP_syn_ausdruck_t*
-kmp_syn_ausdruck_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname)
+kmp_syn_ausdruck_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname)
 {
-    KMP_syn_ausdruck_t* erg = kmp_syn_ausdruck(speicher, KMP_SYN_KNOTEN_AUSDRUCK_BRAUCHE, spanne);
+    KMP_syn_ausdruck_t* erg = kmp_syn_ausdruck(speicher, KMP_SYN_KNOTEN_AUSDRUCK_IMPORT, spanne);
 
-    erg->brauche.dateiname = dateiname;
+    erg->import.dateiname = dateiname;
 
     return erg;
 }
@@ -240,6 +248,14 @@ kmp_syn_spezifizierung(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne)
 }
 
 KMP_syn_spezifizierung_t*
+kmp_syn_spezifizierung_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne)
+{
+    KMP_syn_spezifizierung_t* erg = kmp_syn_spezifizierung(speicher, KMP_SYN_KNOTEN_SPEZIFIZIERUNG_UNGÜLTIG, spanne);
+
+    return erg;
+}
+
+KMP_syn_spezifizierung_t*
 kmp_syn_spezifizierung_bezeichner(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t name)
 {
     KMP_syn_spezifizierung_t* erg = kmp_syn_spezifizierung(speicher, KMP_SYN_KNOTEN_SPEZIFIZIERUNG_BEZEICHNER, spanne);
@@ -295,6 +311,14 @@ kmp_syn_deklaration(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne, BSS_
 }
 
 KMP_syn_deklaration_t*
+kmp_syn_deklaration_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne)
+{
+    KMP_syn_deklaration_t* erg = kmp_syn_deklaration(speicher, KMP_SYN_KNOTEN_DEKLARATION_UNGÜLTIG, spanne, bss_feld(speicher, 0), kmp_syn_spezifizierung_ungültig(speicher, spanne));
+
+    return erg;
+}
+
+KMP_syn_deklaration_t*
 kmp_syn_deklaration_variable(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_spezifizierung_t* spezifizierung, KMP_syn_ausdruck_t* initialisierung)
 {
     KMP_syn_deklaration_t* erg = kmp_syn_deklaration(speicher, KMP_SYN_KNOTEN_DEKLARATION_VARIABLE, spanne, namen, spezifizierung);
@@ -325,11 +349,11 @@ kmp_syn_deklaration_schablone(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS
 }
 
 KMP_syn_deklaration_t*
-kmp_syn_deklaration_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck)
+kmp_syn_deklaration_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_Feld(BSS_text_t) namen, KMP_syn_ausdruck_t* ausdruck)
 {
-    KMP_syn_deklaration_t* erg = kmp_syn_deklaration(speicher, KMP_SYN_KNOTEN_DEKLARATION_BRAUCHE, spanne, namen, NULL);
+    KMP_syn_deklaration_t* erg = kmp_syn_deklaration(speicher, KMP_SYN_KNOTEN_DEKLARATION_IMPORT, spanne, namen, NULL);
 
-    erg->brauche.ausdruck = ausdruck;
+    erg->import.ausdruck = ausdruck;
 
     return erg;
 }
@@ -350,6 +374,14 @@ kmp_syn_anweisung(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne)
 {
     KMP_syn_anweisung_t* erg = speicher->anfordern(speicher, sizeof(KMP_syn_deklaration_t));
     erg->basis = kmp_syn_knoten(speicher, art, spanne);
+
+    return erg;
+}
+
+KMP_syn_anweisung_t*
+kmp_syn_anweisung_ungültig(BSS_speicher_t* speicher, KMP_spanne_t spanne)
+{
+    KMP_syn_anweisung_t* erg = kmp_syn_anweisung(speicher, KMP_SYN_KNOTEN_ANWEISUNG_UNGÜLTIG, spanne);
 
     return erg;
 }
@@ -422,11 +454,11 @@ kmp_syn_anweisung_deklaration(BSS_speicher_t* speicher, KMP_spanne_t spanne, KMP
 }
 
 KMP_syn_anweisung_t*
-kmp_syn_anweisung_brauche(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname)
+kmp_syn_anweisung_import(BSS_speicher_t* speicher, KMP_spanne_t spanne, BSS_text_t dateiname)
 {
-    KMP_syn_anweisung_t* erg = kmp_syn_anweisung(speicher, KMP_SYN_KNOTEN_ANWEISUNG_BRAUCHE, spanne);
+    KMP_syn_anweisung_t* erg = kmp_syn_anweisung(speicher, KMP_SYN_KNOTEN_ANWEISUNG_IMPORT, spanne);
 
-    erg->brauche.dateiname = dateiname;
+    erg->import.dateiname = dateiname;
 
     return erg;
 }

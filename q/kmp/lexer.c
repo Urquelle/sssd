@@ -40,7 +40,7 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
     ziffern['e'] = 14;
     ziffern['f'] = 15;
 
-    BSS_Feld(KMP_glied_t*) erg = bss_feld(speicher, sizeof(KMP_glied_t*));
+    BSS_Feld(KMP_glied_t) erg = bss_feld(speicher, sizeof(KMP_glied_t));
 
     lexer->index = position;
 
@@ -369,10 +369,11 @@ wiederholung:
         // INFO: text
         else if (z.codepoint == L'»' || z.codepoint == '"')
         {
-            char abschluss = z.codepoint == L'»' ? L'«' : '"';
+            n32 abschluss = z.codepoint == L'»' ? L'«' : '"';
+            g32 abschluss_versatz = z.codepoint == L'»' ? -2 : -1;
 
             z = kmp_lexer_weiter(lexer, 1);
-            anfang = z; // um das initiale » nicht in der länge mitzuzählen
+            anfang = z; // INFO: um das initiale » nicht in der länge mitzuzählen
             KMP_zeichen_t ende = z;
 
             while (z.codepoint != abschluss)
@@ -391,12 +392,14 @@ wiederholung:
                 kmp_lexer_weiter(lexer, 1);
             }
 
-            // AUFGABE: hartkodierte -3 weil die anführungszeichen aus mehreren bytes bestehen.
-            //          aber eigentlich sollte die kmp_lexer_nächstes_zeichen(lexer) funktion so implementiert werden,
-            //          dass sie mit negativem versatz umgehen kann und die angabe die anzahl
-            //          der zeichen ist, und nicht die anzahl der bytes; wir sollten einfach
-            //          sagen können, dass wir das zeichen davor haben wollen.
-            KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -3));
+            // AUFGABE: hartkodierte -2 weil die '»' anführungszeichen aus 2 bytes bestehen. -1, falls text mit '"'
+            // umgeben ist. aber eigentlich sollte die kmp_lexer_nächstes_zeichen(lexer) funktion so implementiert
+            // werden, dass sie mit negativem versatz umgehen kann und die angabe die anzahl der zeichen ist,
+            // und nicht die anzahl der bytes; wir sollten einfach sagen können, dass wir das zeichen davor haben wollen.
+            KMP_spanne_t spanne = kmp_spanne_zeichen(
+                anfang,
+                kmp_lexer_nächstes_zeichen(lexer, abschluss_versatz));
+
             bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_TEXT, spanne));
         }
 
@@ -413,7 +416,8 @@ wiederholung:
                 z = kmp_lexer_weiter(lexer, 1);
             }
 
-            KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
+            // KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
+            KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
             bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_BEZEICHNER, spanne));
         }
 
@@ -548,7 +552,7 @@ kmp_lexer_nächstes_zeichen(KMP_lexer_t* lexer, g16 versatz)
         return kmp_zeichen_mit_daten(bss_text("\0"), byte_index, 1, lexer->quelle, lexer->inhalt);
     }
 
-    n8* bytes = (n8*) lexer->inhalt.daten + byte_index;
+    n8* bytes = (n8*)(lexer->inhalt.daten + byte_index);
     n8 zeichen_länge = 1;
 
     if ((bytes[0] & 0x80) == 0)
@@ -568,14 +572,19 @@ kmp_lexer_nächstes_zeichen(KMP_lexer_t* lexer, g16 versatz)
         zeichen_länge = 4;
     }
 
-    if (byte_index + zeichen_länge > lexer->inhalt.größe)
+    if (byte_index + zeichen_länge > (g32)lexer->inhalt.größe)
     {
         zeichen_länge = 1;
     }
 
-    return kmp_zeichen_mit_daten(
+    KMP_zeichen_t erg = kmp_zeichen_mit_daten(
         bss_text(lexer->inhalt.daten + byte_index),
-        byte_index, zeichen_länge, lexer->quelle, lexer->inhalt);
+        byte_index,
+        zeichen_länge,
+        lexer->quelle,
+        lexer->inhalt);
+
+    return erg;
 }
 
 KMP_zeichen_t
@@ -583,9 +592,9 @@ kmp_lexer_weiter(KMP_lexer_t *lexer, g32 anzahl)
 {
     for (g32 i = 0; i < anzahl; ++i)
     {
-        lexer->index += kmp_lexer_nächstes_zeichen(lexer, 1).byte_länge;
+        lexer->index += kmp_lexer_nächstes_zeichen(lexer, 0).byte_länge;
     }
 
-    return kmp_lexer_nächstes_zeichen(lexer, 1);
+    return kmp_lexer_nächstes_zeichen(lexer, 0);
 }
 

@@ -56,10 +56,6 @@ w32 kmp_syn_passt(KMP_syntax_t* syntax, g32 art);
 w32 kmp_syn_ist(KMP_syntax_t* syntax, g32 art, g32 versatz /* = 0 */);
 w32 kmp_syn_dateiende(KMP_syntax_t* syntax);
 
-void kmp_syn_melden_spanne(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_spanne_t spanne, KMP_fehler_t *fehler);
-void kmp_syn_melden_knoten(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_syn_knoten_t* knoten, KMP_fehler_t* fehler);
-void kmp_syn_melden_glied(BSS_speicher_t* speicher, KMP_syntax_t* syntax, KMP_glied_t* glied, KMP_fehler_t* fehler);
-
 g32 kmp_syn_glied_zu_binär_op(KMP_glied_t* glied);
 g32 kmp_syn_glied_zu_unär_op(KMP_glied_t* glied);
 
