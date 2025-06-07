@@ -47,6 +47,8 @@ kmp_syn_starten(BSS_speicher_t* speicher, KMP_syntax_t* syntax, g32 index)
 {
     KMP_syn_asb_t erg = {0};
 
+    erg.anweisungen = bss_feld(speicher, sizeof(KMP_syn_anweisung_t));
+
     for (;;)
     {
         if (kmp_syn_dateiende(syntax))

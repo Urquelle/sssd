@@ -128,7 +128,7 @@ struct KMP_syn_muster_t
 
 struct KMP_syn_asb_t
 {
-    BSS_Feld(KMP_knoten_t*) anweisungen;
+    BSS_Feld(KMP_knoten_t) anweisungen;
 };
 
 struct KMP_syn_ausdruck_kompositum_eigenschaft_t

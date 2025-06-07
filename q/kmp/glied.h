@@ -81,11 +81,11 @@ struct KMP_glied_t
     };
 };
 
-KMP_glied_t* kmp_glied(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne);
-KMP_glied_t* kmp_glied_bezeichner(BSS_speicher_t* speicher, KMP_spanne_t spanne);
-KMP_glied_t* kmp_glied_text(BSS_speicher_t* speicher, KMP_spanne_t spanne);
-KMP_glied_t* kmp_glied_ganzzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, g32 zahl, g32 basis);
-KMP_glied_t* kmp_glied_dezimalzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, d32 wert);
+KMP_glied_t kmp_glied(BSS_speicher_t* speicher, g32 art, KMP_spanne_t spanne);
+KMP_glied_t kmp_glied_bezeichner(BSS_speicher_t* speicher, KMP_spanne_t spanne);
+KMP_glied_t kmp_glied_text(BSS_speicher_t* speicher, KMP_spanne_t spanne);
+KMP_glied_t kmp_glied_ganzzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, g32 zahl, g32 basis);
+KMP_glied_t kmp_glied_dezimalzahl(BSS_speicher_t* speicher, KMP_spanne_t spanne, d32 wert);
 BSS_text_t* kmp_glied_text_kopieren(KMP_spanne_t spanne);
 
 #endif

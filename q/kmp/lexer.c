@@ -53,7 +53,8 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
         if (z.codepoint == '\0')
         {
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_weiter(lexer, 1));
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_ENDE, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_ENDE, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
             break;
         }
 
@@ -61,7 +62,8 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_KLAMMERAFFE, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_KLAMMERAFFE, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '.')
@@ -72,12 +74,14 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PUNKT_PUNKT, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PUNKT_PUNKT, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PUNKT, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PUNKT, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -85,20 +89,24 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_KOMMA, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_KOMMA, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == ':')
         {
             kmp_lexer_weiter(lexer, 1);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_DOPPELPUNKT, kmp_spanne_zeichen(anfang, z)));
+            KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_DOPPELPUNKT, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == ';')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_STRICHPUNKT, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_STRICHPUNKT, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '|')
@@ -109,12 +117,14 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_DREIECK_RECHTS, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_DREIECK_RECHTS, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_BALKEN, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_BALKEN, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -122,42 +132,48 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_RKLAMMER_AUF, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_RKLAMMER_AUF, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == ')')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_RKLAMMER_ZU, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_RKLAMMER_ZU, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '[')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_EKLAMMER_AUF, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_EKLAMMER_AUF, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == ']')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_EKLAMMER_ZU, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_EKLAMMER_ZU, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '{')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_GKLAMMER_AUF, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_GKLAMMER_AUF, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '}')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_GKLAMMER_ZU, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_GKLAMMER_ZU, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '+')
@@ -168,12 +184,14 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_ZUWEISUNG_PLUS, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_ZUWEISUNG_PLUS, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PLUS, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PLUS, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -185,12 +203,14 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PFEIL, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PFEIL, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_MINUS, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_MINUS, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -198,14 +218,16 @@ kmp_lexer_starten(BSS_speicher_t* speicher, KMP_lexer_t* lexer, g32 position)
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_STERN, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_STERN, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '/')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PISA, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PISA, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '#')
@@ -268,7 +290,8 @@ wiederholung:
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_RAUTE, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_RAUTE, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -280,12 +303,14 @@ wiederholung:
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_UNGLEICH, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_UNGLEICH, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_AUSRUFEZEICHEN, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_AUSRUFEZEICHEN, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -293,14 +318,16 @@ wiederholung:
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_PROZENT, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_PROZENT, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '&')
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_KAUFMANNSUND, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_KAUFMANNSUND, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         else if (z.codepoint == '=')
@@ -311,18 +338,21 @@ wiederholung:
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_GLEICH, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_GLEICH, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else if (z.codepoint == '>')
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_FOLGERUNG, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_FOLGERUNG, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_ZUWEISUNG, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_ZUWEISUNG, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -334,18 +364,21 @@ wiederholung:
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_KLEINER_GLEICH, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_KLEINER_GLEICH, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else if (z.codepoint == '|')
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_DREIECK_LINKS, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_DREIECK_LINKS, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_KLEINER, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_KLEINER, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -357,12 +390,14 @@ wiederholung:
             {
                 kmp_lexer_weiter(lexer, 1);
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_GRÖẞER_GLEICH, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_GRÖẞER_GLEICH, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_GRÖẞER, spanne));
+                KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_GRÖẞER, spanne);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
 
@@ -399,8 +434,9 @@ wiederholung:
             KMP_spanne_t spanne = kmp_spanne_zeichen(
                 anfang,
                 kmp_lexer_nächstes_zeichen(lexer, abschluss_versatz));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_TEXT, spanne);
 
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_TEXT, spanne));
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         // INFO: bezeichner
@@ -418,7 +454,8 @@ wiederholung:
 
             // KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, kmp_lexer_nächstes_zeichen(lexer, -1));
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_BEZEICHNER, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_BEZEICHNER, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
 
         // INFO: zahlen
@@ -483,8 +520,8 @@ wiederholung:
                 }
 
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, ende);
-
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied_ganzzahl(speicher, spanne, wert, basis));
+                KMP_glied_t glied = kmp_glied_ganzzahl(speicher, spanne, wert, basis);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else if (z.codepoint == ',')
             {
@@ -509,19 +546,22 @@ wiederholung:
                 }
 
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, ende);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied_dezimalzahl(speicher, spanne, dezimalwert));
+                KMP_glied_t glied = kmp_glied_dezimalzahl(speicher, spanne, dezimalwert);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
             else
             {
                 KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, ende);
-                bss_feld_hinzufügen(speicher, &erg, kmp_glied_ganzzahl(speicher, spanne, wert, 10));
+                KMP_glied_t glied = kmp_glied_ganzzahl(speicher, spanne, wert, 10);
+                bss_feld_hinzufügen(speicher, &erg, &glied);
             }
         }
         else
         {
             kmp_lexer_weiter(lexer, 1);
             KMP_spanne_t spanne = kmp_spanne_zeichen(anfang, z);
-            bss_feld_hinzufügen(speicher, &erg, kmp_glied(speicher, KMP_GLIED_ILLEGAL, spanne));
+            KMP_glied_t glied = kmp_glied(speicher, KMP_GLIED_ILLEGAL, spanne);
+            bss_feld_hinzufügen(speicher, &erg, &glied);
         }
     }
 
